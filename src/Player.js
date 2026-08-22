@@ -10,11 +10,10 @@ export class Player {
         this.box = null;
         this.pieces = [];
         this.slots = [];
-        this.heldPieceIndex = -1;
+        this.handStates = []; // Array of { isPinching: false, heldPieceIndex: -1 } for each active hand
         this.startTime = null;
         this.elapsedTime = 0;
         this.intervalId = null;
-        this.isPinching = false;
     }
 
     get ctx() {
@@ -172,8 +171,7 @@ export class Player {
             }
         } while (slotIndices.every((val, idx) => val === idx));
 
-        this.heldPieceIndex = -1;
-        this.isPinching = false;
+        this.handStates = [];
         this.pieces.forEach((p, index) => {
             p.currentSlot = slotIndices[index];
             this.snapToSlot(p);
@@ -185,8 +183,7 @@ export class Player {
         this.box = null;
         this.pieces = [];
         this.slots = [];
-        this.heldPieceIndex = -1;
-        this.isPinching = false;
+        this.handStates = [];
         if (this.intervalId) {
             clearInterval(this.intervalId);
             this.intervalId = null;
@@ -205,8 +202,10 @@ export class Player {
 
     snapToSlot(piece) {
         let slot = this.slots[piece.currentSlot];
-        piece.drawX = slot.x;
-        piece.drawY = slot.y;
+        if (slot) {
+            piece.drawX = slot.x;
+            piece.drawY = slot.y;
+        }
     }
 
     drawWaiting(isLose = false) {
@@ -239,17 +238,27 @@ export class Player {
         this.slots.forEach(slot => ctx.strokeRect(slot.x, slot.y, slot.w, slot.h));
         ctx.restore();
 
-        let cursor = null;
-        let pinching = false;
+        // Release any held pieces from hands that are no longer detected
+        if (this.handStates.length > handsData.length) {
+            for (let i = handsData.length; i < this.handStates.length; i++) {
+                let hs = this.handStates[i];
+                if (hs && hs.heldPieceIndex !== -1) {
+                    let piece = this.pieces[hs.heldPieceIndex];
+                    if (piece) this.snapToSlot(piece);
+                    hs.heldPieceIndex = -1;
+                    hs.isPinching = false;
+                }
+            }
+            this.handStates.length = handsData.length;
+        }
 
-        if (handsData.length > 0) {
-            let h = handsData[0];
-            cursor = { x: (h[4].x + h[8].x) / 2, y: (h[4].y + h[8].y) / 2 };
-            pinching = getDistance(h[4], h[8]) < PINCH_THRESHOLD;
+        // Process each active hand independently
+        handsData.forEach((h, hIdx) => {
+            let cursor = { x: (h[4].x + h[8].x) / 2, y: (h[4].y + h[8].y) / 2 };
+            let pinching = getDistance(h[4], h[8]) < PINCH_THRESHOLD;
 
+            // Draw cursor & pinch feedback for this hand
             ctx.save();
-
-            // Pulsing animation effect based on time
             let pulse = pinching ? Math.abs(Math.sin(Date.now() / 120)) * 6 : 0;
             let radius = pinching ? 12 + pulse : 8;
 
@@ -257,7 +266,6 @@ export class Player {
             ctx.shadowColor = pinching ? this.color : "white";
             ctx.shadowBlur = pinching ? 20 + pulse * 2 : 10;
 
-            // Add glowing line (lightning) & cursor ring when pinching
             if (pinching) {
                 ctx.strokeStyle = this.color;
                 ctx.lineWidth = 4 + pulse / 2;
@@ -276,72 +284,99 @@ export class Player {
             ctx.arc(cursor.x, cursor.y, radius, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
-        }
 
-        let elemUnderCursor = cursor ? document.elementFromPoint(cursor.x, cursor.y) : null;
-        let isOverInteractive = elemUnderCursor && elemUnderCursor.closest('button, .mode-card, a');
+            let elemUnderCursor = document.elementFromPoint(cursor.x, cursor.y);
+            let isOverInteractive = elemUnderCursor && elemUnderCursor.closest('button, .mode-card, a');
 
-        if (pinching && !this.isPinching) {
-            this.isPinching = true;
-            if (cursor && this.heldPieceIndex === -1 && !isOverInteractive) {
-                for (let i = 0; i < this.pieces.length; i++) {
-                    let p = this.pieces[i];
-                    let slot = this.slots[p.currentSlot];
-                    if (cursor.x >= slot.x && cursor.x <= slot.x + slot.w &&
-                        cursor.y >= slot.y && cursor.y <= slot.y + slot.h) {
-                        this.heldPieceIndex = i;
-                        break;
+            let hState = this.handStates[hIdx];
+            if (!hState) {
+                hState = this.handStates[hIdx] = { isPinching: false, heldPieceIndex: -1 };
+            }
+
+            // Pinch started: grab a piece if available
+            if (pinching && !hState.isPinching) {
+                hState.isPinching = true;
+                if (hState.heldPieceIndex === -1 && !isOverInteractive) {
+                    for (let i = 0; i < this.pieces.length; i++) {
+                        let p = this.pieces[i];
+                        let slot = this.slots[p.currentSlot];
+                        let alreadyHeld = this.handStates.some((hs, otherIdx) => otherIdx !== hIdx && hs.heldPieceIndex === i);
+                        if (!alreadyHeld && slot &&
+                            cursor.x >= slot.x && cursor.x <= slot.x + slot.w &&
+                            cursor.y >= slot.y && cursor.y <= slot.y + slot.h) {
+                            hState.heldPieceIndex = i;
+                            break;
+                        }
                     }
                 }
-            }
-        } else if (pinching && this.isPinching) {
-            if (this.heldPieceIndex !== -1 && cursor) {
-                let p = this.pieces[this.heldPieceIndex];
-                p.drawX = cursor.x - this.slots[0].w / 2;
-                p.drawY = cursor.y - this.slots[0].h / 2;
-            }
-        } else if (!pinching && this.isPinching) {
-            this.isPinching = false;
-            if (this.heldPieceIndex !== -1 && cursor) {
-                let heldPiece = this.pieces[this.heldPieceIndex];
-                let targetSlotIndex = -1;
-                let minDist = Infinity;
-
-                for (let i = 0; i < this.slots.length; i++) {
-                    let slot = this.slots[i];
-                    let cx = slot.x + slot.w / 2;
-                    let cy = slot.y + slot.h / 2;
-                    let dist = getDistance(cursor, { x: cx, y: cy });
-                    if (dist < minDist) { minDist = dist; targetSlotIndex = i; }
-                }
-
-                if (targetSlotIndex !== -1 && targetSlotIndex !== heldPiece.currentSlot) {
-                    let pieceInTarget = this.pieces.find(p => p.currentSlot === targetSlotIndex);
-                    if (pieceInTarget) {
-                        pieceInTarget.currentSlot = heldPiece.currentSlot;
-                        this.snapToSlot(pieceInTarget);
+            } else if (pinching && hState.isPinching) {
+                // Dragging held piece
+                if (hState.heldPieceIndex !== -1) {
+                    let p = this.pieces[hState.heldPieceIndex];
+                    if (p && this.slots[0]) {
+                        p.drawX = cursor.x - this.slots[0].w / 2;
+                        p.drawY = cursor.y - this.slots[0].h / 2;
                     }
-                    heldPiece.currentSlot = targetSlotIndex;
                 }
+            } else if (!pinching && hState.isPinching) {
+                // Pinch released: snap piece to nearest slot
+                hState.isPinching = false;
+                if (hState.heldPieceIndex !== -1) {
+                    let heldPiece = this.pieces[hState.heldPieceIndex];
+                    let targetSlotIndex = -1;
+                    let minDist = Infinity;
 
-                this.snapToSlot(heldPiece);
-                this.heldPieceIndex = -1;
-                this.checkWin();
+                    for (let i = 0; i < this.slots.length; i++) {
+                        let slot = this.slots[i];
+                        let cx = slot.x + slot.w / 2;
+                        let cy = slot.y + slot.h / 2;
+                        let dist = getDistance(cursor, { x: cx, y: cy });
+                        if (dist < minDist) {
+                            minDist = dist;
+                            targetSlotIndex = i;
+                        }
+                    }
+
+                    if (targetSlotIndex !== -1 && heldPiece && targetSlotIndex !== heldPiece.currentSlot) {
+                        let pieceInTarget = this.pieces.find(p => p.currentSlot === targetSlotIndex);
+                        if (pieceInTarget) {
+                            pieceInTarget.currentSlot = heldPiece.currentSlot;
+                            let isTargetHeldByOther = this.handStates.some((hs, otherIdx) => otherIdx !== hIdx && hs.heldPieceIndex === pieceInTarget.id);
+                            if (!isTargetHeldByOther) {
+                                this.snapToSlot(pieceInTarget);
+                            }
+                        }
+                        heldPiece.currentSlot = targetSlotIndex;
+                    }
+
+                    if (heldPiece) {
+                        this.snapToSlot(heldPiece);
+                    }
+                    hState.heldPieceIndex = -1;
+                    this.checkWin();
+                }
             }
-        }
+        });
 
-        // Render Pieces
+        // Collect all currently held piece indices
+        const heldIndices = this.handStates
+            .map(hs => hs.heldPieceIndex)
+            .filter(idx => idx !== -1);
+
+        // Render non-held pieces first
         this.pieces.forEach((p, idx) => {
-            if (idx !== this.heldPieceIndex) {
+            if (!heldIndices.includes(idx)) {
                 ctx.drawImage(p.image, p.drawX, p.drawY);
                 ctx.strokeStyle = "#222";
                 ctx.strokeRect(p.drawX, p.drawY, p.image.width, p.image.height);
             }
         });
 
-        // Render Special Piece (Being held / dragged)
-        if (this.heldPieceIndex !== -1) {
-            let p = this.pieces[this.heldPieceIndex];
+        // Render all held pieces on top with glow effect
+        heldIndices.forEach(pieceIdx => {
+            let p = this.pieces[pieceIdx];
+            if (!p) return;
+
             ctx.globalAlpha = 0.85;
             ctx.drawImage(p.image, p.drawX, p.drawY);
             ctx.globalAlpha = 1.0;
@@ -354,7 +389,7 @@ export class Player {
             ctx.lineWidth = 4 + pulseGlow / 4;
             ctx.strokeRect(p.drawX, p.drawY, p.image.width, p.image.height);
             ctx.restore();
-        }
+        });
 
         // Timer Display - Enlarged for distance readability
         ctx.save();
@@ -368,7 +403,7 @@ export class Player {
     }
 
     checkWin() {
-        let isWin = this.pieces.every(p => p.id === p.currentSlot);
+        let isWin = this.pieces.length === 9 && this.pieces.every(p => p.id === p.currentSlot);
         if (isWin && this.state !== 'SOLVED') {
             this.state = 'SOLVED';
             clearInterval(this.intervalId);
