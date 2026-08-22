@@ -162,110 +162,124 @@
     </style>
 </head>
 
-<body class="font-sora text-white">
+<body class="font-sora text-white bg-[#070913]">
 
     <!-- UI Overlay (Main Menu) -->
     <div id="ui-layer"
-        class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md transition-opacity duration-500 p-6">
+        class="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-black/50 backdrop-blur-md transition-opacity duration-500 flex flex-col p-4 sm:p-6 md:p-8">
 
-        <!-- Logo ITEBA -->
-        <div class="pb-5 md:pb-7 flex justify-center items-center">
-            <img src="/logo-iteba.png" alt="Logo ITEBA"
-                class="h-16 md:h-20 lg:h-24 w-auto object-contain drop-shadow-[0_0_15px_rgba(0,240,255,0.6)]" />
-        </div>
+        <!-- Inner Content Center Container -->
+        <div class="w-full max-w-5xl m-auto flex flex-col items-center py-2 sm:py-4">
 
-        <!-- Title Section -->
-        <h1
-            class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-10 tracking-widest uppercase text-center flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
-            <span class="title-outline-cyan px-2 py-1">YOUR FACE</span>
-            <span class="title-outline-pink px-2 py-1">PUZZLE</span>
-        </h1>
-
-        <!-- Game Modes Container -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl mb-10">
-            <!-- Single Player Card -->
-            <div id="card-single"
-                class="mode-card mode-card-single group relative rounded-3xl p-5 md:p-8 flex items-center gap-5 text-left">
-                <div class="flex-shrink-0 text-[#00f0ff]">
-                    <!-- Single User Icon -->
-                    <svg class="h-14 w-14 drop-shadow-[0_0_12px_rgba(0,240,255,0.9)]" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </div>
-                <div>
-                    <h2
-                        class="text-xl md:text-3xl font-black mb-2 text-[#00f0ff] tracking-wider drop-shadow-[0_0_8px_rgba(0,240,255,0.7)]">
-                        SINGLE PLAYER</h2>
-                    <p class="text-sm md:text-lg text-gray-200 leading-relaxed font-normal">
-                        Main sendiri! Selesaikan puzzle<br>wajahmu secepat mungkin.
-                    </p>
+            <!-- Logos Header (ITEBA, HMSI, TECHNOFEST) -->
+            <div class="mb-5 md:mb-10 flex justify-center items-center">
+                <div
+                    class="bg-white backdrop-blur-sm p-3 md:p-5 md:rounded-2xl rounded-xl shadow-lg flex items-center justify-center gap-4 md:gap-8">
+                    <img src="/logo-iteba.png" alt="Logo ITEBA" class="h-6 sm:h-8 md:h-10 w-auto object-contain" />
+                    <img src="/logo-hmsi.png" alt="Logo HMSI" class="h-6 sm:h-8 md:h-10 w-auto object-contain" />
+                    <img src="/logo-technofest.png" alt="Logo Technofest"
+                        class="h-6 sm:h-8 md:h-10 w-auto object-contain" />
                 </div>
             </div>
 
-            <!-- Multiplayer Card -->
-            <div id="card-multi"
-                class="mode-card mode-card-multi group relative rounded-3xl p-5 md:p-8 flex items-center gap-5 text-left">
-                <div class="flex-shrink-0 text-[#ff2a85]">
-                    <!-- Users Icon -->
-                    <svg class="h-14 w-14 drop-shadow-[0_0_12px_rgba(255,42,133,0.9)]" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
+            <!-- Title Section -->
+            <h1
+                class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 md:mb-8 tracking-widest uppercase text-center flex flex-wrap justify-center items-center gap-x-3 sm:gap-x-4 gap-y-1">
+                <span class="title-outline-cyan px-2 py-1">YOUR FACE</span>
+                <span class="title-outline-pink px-2 py-1">PUZZLE</span>
+            </h1>
+
+            <!-- Game Modes Container -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full mb-6 md:mb-8">
+                <!-- Single Player Card -->
+                <div id="card-single"
+                    class="mode-card mode-card-single group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left">
+                    <div class="flex-shrink-0 text-[#00f0ff]">
+                        <!-- Single User Icon -->
+                        <svg class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 drop-shadow-[0_0_12px_rgba(0,240,255,0.9)]"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2
+                            class="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#00f0ff] tracking-wider drop-shadow-[0_0_8px_rgba(0,240,255,0.7)]">
+                            SINGLE PLAYER</h2>
+                        <p
+                            class="text-xs sm:text-sm md:text-lg text-gray-200 leading-snug sm:leading-relaxed font-normal">
+                            Main sendiri! Selesaikan puzzle<br class="hidden sm:inline"> wajahmu secepat mungkin.
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h2
-                        class="text-xl md:text-3xl font-black mb-2 text-[#ff2a85] tracking-wider drop-shadow-[0_0_8px_rgba(255,42,133,0.7)]">
-                        MULTIPLAYER</h2>
-                    <p class="text-sm md:text-lg text-gray-200 leading-relaxed font-normal">
-                        Berdua lebih seru! Siapa yang tercepat<br>menyelesaikan, dia yang menang.
-                    </p>
+
+                <!-- Multiplayer Card -->
+                <div id="card-multi"
+                    class="mode-card mode-card-multi group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left">
+                    <div class="flex-shrink-0 text-[#ff2a85]">
+                        <!-- Users Icon -->
+                        <svg class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 drop-shadow-[0_0_12px_rgba(255,42,133,0.9)]"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2
+                            class="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#ff2a85] tracking-wider drop-shadow-[0_0_8px_rgba(255,42,133,0.7)]">
+                            MULTIPLAYER</h2>
+                        <p
+                            class="text-xs sm:text-sm md:text-lg text-gray-200 leading-snug sm:leading-relaxed font-normal">
+                            Berdua lebih seru! Siapa yang tercepat<br class="hidden sm:inline"> menyelesaikan, dia yang
+                            menang.
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Rules Section -->
-        <div class="text-center mb-8 max-w-4xl px-4">
-            <h3 class="text-xl md:text-2xl font-extrabold mb-3 text-white tracking-wider">ATURAN:</h3>
-            <p class="text-gray-200 text-sm md:text-lg leading-relaxed font-normal">
-                Gunakan tanganmu untuk screenshot wajahmu. Lalu susun puzzle dengan menjentikkan jari!
-            </p>
-            <p class="text-gray-200 text-sm md:text-lg leading-relaxed font-normal pt-2">
-                Tangan juga bisa untuk klik tombol, jentikkan jari (pinch) atau tahan tangan di atas tombol!
-            </p>
-        </div>
+            <!-- Rules Section -->
+            <div class="text-center mb-6 md:mb-8 max-w-4xl px-2">
+                <h3 class="text-base sm:text-lg md:text-2xl font-extrabold mb-1.5 md:mb-3 text-white tracking-wider">
+                    ATURAN:</h3>
+                <p class="text-gray-200 text-xs sm:text-sm md:text-lg leading-relaxed font-normal">
+                    Gunakan tanganmu untuk screenshot wajahmu. Lalu susun puzzle dengan menjentikkan jari!
+                </p>
+                <p class="text-gray-200 text-xs sm:text-sm md:text-lg leading-relaxed font-normal pt-1">
+                    Tangan juga bisa untuk klik tombol, jentikkan jari (pinch) atau tahan tangan di atas tombol!
+                </p>
+            </div>
 
-        <!-- Action Buttons -->
-        <div class="flex flex-col gap-7 w-full max-w-md items-center">
-            <!-- Start Game Button -->
-            <button id="btn-start-game"
-                class="btn-dual-glow w-full max-w-sm py-4 px-8 rounded-full font-black text-xl md:text-3xl uppercase tracking-wider flex justify-center items-center gap-3 cursor-not-allowed opacity-40 shadow-2xl transition-all duration-300"
-                disabled>
-                <span
-                    class="text-[#00f0ff] font-black tracking-wider drop-shadow-[0_0_10px_rgba(0,240,255,0.9)]">START</span>
-                <span
-                    class="text-[#ff2a85] font-black tracking-wider drop-shadow-[0_0_10px_rgba(255,42,133,0.9)]">GAME</span>
-            </button>
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-3 sm:gap-4 md:gap-6 w-full max-w-md items-center mb-2 sm:mb-4">
+                <!-- Start Game Button -->
+                <button id="btn-start-game"
+                    class="btn-dual-glow w-full max-w-xs sm:max-w-sm py-3.5 sm:py-4 px-6 sm:px-8 rounded-full font-black text-lg sm:text-xl md:text-3xl uppercase tracking-wider flex justify-center items-center gap-2 sm:gap-3 cursor-not-allowed opacity-40 shadow-2xl transition-all duration-300"
+                    disabled>
+                    <span
+                        class="text-[#00f0ff] font-black tracking-wider drop-shadow-[0_0_10px_rgba(0,240,255,0.9)]">START</span>
+                    <span
+                        class="text-[#ff2a85] font-black tracking-wider drop-shadow-[0_0_10px_rgba(255,42,133,0.9)]">GAME</span>
+                </button>
 
-            <!-- Activate Camera Button -->
-            <button id="btn-start-cam"
-                class="w-full max-w-sm py-3.5 px-6 rounded-full font-bold text-xs md:text-lg uppercase tracking-widest border-2 border-gray-600/80 text-gray-300 hover:border-gray-400 hover:text-white transition-all bg-[#090e1a]/60 backdrop-blur-md shadow-md cursor-pointer">
-                ACTIVATE CAMERA
-            </button>
+                <!-- Activate Camera Button -->
+                <button id="btn-start-cam"
+                    class="w-full max-w-xs sm:max-w-sm py-3 sm:py-3.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-lg uppercase tracking-widest border-2 border-gray-600/80 text-gray-300 hover:border-gray-400 hover:text-white transition-all bg-[#090e1a]/60 backdrop-blur-md shadow-md cursor-pointer">
+                    ACTIVATE CAMERA
+                </button>
+            </div>
+
         </div>
 
         <!-- Footer -->
         <footer
-            class="absolute bottom-4 left-7 right-7 flex justify-between items-center text-sm md:text-lg text-gray-400 font-medium">
+            class="w-full mt-auto pt-6 pb-2 px-3 sm:px-6 md:px-8 flex flex-row justify-between items-center text-xs sm:text-sm md:text-base text-gray-400 font-medium shrink-0">
             <div>Created by: <span class="text-white font-semibold">Ahmad Miftahul Zaki</span></div>
-            <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 md:w-7 md:h-7 text-[#ff2a85] inline-block drop-shadow-[0_0_8px_rgba(255,42,133,0.8)]"
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#ff2a85] inline-block drop-shadow-[0_0_8px_rgba(255,42,133,0.8)]"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round">
                     <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
