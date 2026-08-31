@@ -1,6 +1,8 @@
-import { HAND_CONNECTIONS, PINCH_THRESHOLD, getDistance, COLOR_P1, COLOR_P2 } from './constants.js';
+import { HAND_CONNECTIONS, PINCH_THRESHOLD, getDistance, COLOR_P1, COLOR_P2 } from '../constants';
+import { ClickRipple, HandUiState, Landmarks, Point } from '../types/game';
+import { Camera, Hands, MediaPipeResults } from '../types/mediapipe';
 
-export function drawSkeleton(landmarks, color, targetCtx) {
+export function drawSkeleton(landmarks: Landmarks, color: string, targetCtx: CanvasRenderingContext2D): void {
     if (!landmarks || landmarks.length === 0) return;
     targetCtx.save();
     targetCtx.strokeStyle = color;
@@ -29,20 +31,20 @@ export function drawSkeleton(landmarks, color, targetCtx) {
 }
 
 export function createHandUiController() {
-    let handUiStates = [
+    const handUiStates: HandUiState[] = [
         { isPinching: false, hoverElem: null, hoverStartTime: 0, lastClickTime: 0 },
         { isPinching: false, hoverElem: null, hoverStartTime: 0, lastClickTime: 0 },
         { isPinching: false, hoverElem: null, hoverStartTime: 0, lastClickTime: 0 },
         { isPinching: false, hoverElem: null, hoverStartTime: 0, lastClickTime: 0 }
     ];
-    let clickRipples = [];
+    const clickRipples: ClickRipple[] = [];
 
-    function triggerHandClick(elem, x, y, color) {
+    function triggerHandClick(elem: HTMLElement | null, x: number, y: number, color?: string): void {
         if (!elem) return;
         elem.click();
         clickRipples.push({
-            x: x,
-            y: y,
+            x,
+            y,
             radius: 10,
             maxRadius: 70,
             alpha: 1.0,
@@ -50,30 +52,37 @@ export function createHandUiController() {
         });
     }
 
-    function processHandInteractions(mappedHands, isMenuOrWinOpen, uiCursorCtx) {
+    function processHandInteractions(
+        mappedHands: Landmarks[],
+        isMenuOrWinOpen: boolean,
+        uiCursorCtx: CanvasRenderingContext2D
+    ): void {
         const now = Date.now();
 
         mappedHands.forEach((hand, idx) => {
-            let handColor = idx === 0 ? COLOR_P1 : (idx === 1 ? COLOR_P2 : '#00f0ff');
+            const handColor = idx === 0 ? COLOR_P1 : (idx === 1 ? COLOR_P2 : '#00f0ff');
 
             // If in menu/win overlay, draw glowing skeleton on top cursor canvas
             if (isMenuOrWinOpen) {
                 drawSkeleton(hand, handColor, uiCursorCtx);
             }
 
-            let cursor = { x: (hand[4].x + hand[8].x) / 2, y: (hand[4].y + hand[8].y) / 2 };
-            let pinchDist = getDistance(hand[4], hand[8]);
-            let isPinching = pinchDist < PINCH_THRESHOLD;
+            const cursor: Point = { x: (hand[4].x + hand[8].x) / 2, y: (hand[4].y + hand[8].y) / 2 };
+            const pinchDist = getDistance(hand[4], hand[8]);
+            const isPinching = pinchDist < PINCH_THRESHOLD;
 
-            let elem = document.elementFromPoint(cursor.x, cursor.y);
-            let clickable = elem ? elem.closest('button:not(:disabled), .mode-card, a') : null;
+            const elem = document.elementFromPoint(cursor.x, cursor.y);
+            const clickable = elem ? (elem.closest('button:not(:disabled), .mode-card, a') as HTMLElement | null) : null;
 
-            let state = handUiStates[idx] || (handUiStates[idx] = { isPinching: false, hoverElem: null, hoverStartTime: 0, lastClickTime: 0 });
+            let state = handUiStates[idx];
+            if (!state) {
+                state = handUiStates[idx] = { isPinching: false, hoverElem: null, hoverStartTime: 0, lastClickTime: 0 };
+            }
 
             let dwellProgress = 0;
             if (clickable) {
                 if (state.hoverElem === clickable) {
-                    let elapsed = now - state.hoverStartTime;
+                    const elapsed = now - state.hoverStartTime;
                     dwellProgress = Math.min(elapsed / 1000, 1);
                     if (dwellProgress >= 1 && (now - state.lastClickTime > 1000)) {
                         triggerHandClick(clickable, cursor.x, cursor.y, handColor);
@@ -115,9 +124,9 @@ export function createHandUiController() {
                 }
 
                 // Cursor core & pulsing ring
-                let pulse = isPinching ? Math.abs(Math.sin(now / 100)) * 8 : (clickable ? Math.abs(Math.sin(now / 150)) * 4 : 0);
-                let baseRadius = clickable ? 14 : 9;
-                let radius = baseRadius + pulse;
+                const pulse = isPinching ? Math.abs(Math.sin(now / 100)) * 8 : (clickable ? Math.abs(Math.sin(now / 150)) * 4 : 0);
+                const baseRadius = clickable ? 14 : 9;
+                const radius = baseRadius + pulse;
 
                 uiCursorCtx.fillStyle = isPinching ? "#FFFFFF" : handColor;
                 uiCursorCtx.shadowColor = handColor;
@@ -154,7 +163,7 @@ export function createHandUiController() {
         if (clickRipples.length > 0) {
             uiCursorCtx.save();
             for (let r = clickRipples.length - 1; r >= 0; r--) {
-                let rip = clickRipples[r];
+                const rip = clickRipples[r];
                 rip.radius += 4;
                 rip.alpha -= 0.05;
                 if (rip.alpha <= 0 || rip.radius >= rip.maxRadius) {
@@ -180,10 +189,20 @@ export function createHandUiController() {
     };
 }
 
-export function initMediaPipe({ videoElement, onResultsCallback }) {
-    /* global Hands, Camera */
-    const hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+export function initMediaPipe({
+    videoElement,
+    onResultsCallback
+}: {
+    videoElement: HTMLVideoElement;
+    onResultsCallback: (results: MediaPipeResults) => void;
+}): { hands: Hands | null; camera: Camera | null } {
+    if (typeof window === 'undefined' || !window.Hands || !window.Camera) {
+        console.warn('MediaPipe Hands or Camera is not yet loaded on window.');
+        return { hands: null, camera: null };
+    }
+
+    const hands = new window.Hands({
+        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
 
     hands.setOptions({
@@ -195,7 +214,7 @@ export function initMediaPipe({ videoElement, onResultsCallback }) {
 
     hands.onResults(onResultsCallback);
 
-    const camera = new Camera(videoElement, {
+    const camera = new window.Camera(videoElement, {
         onFrame: async () => {
             await hands.send({ image: videoElement });
         },

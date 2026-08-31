@@ -1,26 +1,40 @@
-import { PINCH_THRESHOLD, getDistance, COLOR_P1 } from './constants.js';
+import { PINCH_THRESHOLD, getDistance } from '../constants';
+import { Box, GameEngineContext, HandState, Landmarks, PlayerState, PuzzlePiece, Slot } from '../types/game';
 
 export class Player {
-    constructor(id, bounds, color, gameContext) {
+    public id: number;
+    public bounds: Box;
+    public color: string;
+    public gameContext: GameEngineContext;
+    public state: PlayerState;
+    public box: Box | null;
+    public pieces: PuzzlePiece[];
+    public slots: Slot[];
+    public handStates: HandState[];
+    public startTime: number | null;
+    public elapsedTime: number;
+    public intervalId: ReturnType<typeof setInterval> | null;
+
+    constructor(id: number, bounds: Box, color: string, gameContext: GameEngineContext) {
         this.id = id;
         this.bounds = bounds;
         this.color = color;
-        this.gameContext = gameContext; // { ctx, canvasElement, getSelectedMode, getPlayers, triggerWinScreen }
-        this.state = 'CALIBRATING'; // CALIBRATING, WAITING, PLAYING, SOLVED, LOSE
+        this.gameContext = gameContext;
+        this.state = 'CALIBRATING';
         this.box = null;
         this.pieces = [];
         this.slots = [];
-        this.handStates = []; // Array of { isPinching: false, heldPieceIndex: -1 } for each active hand
+        this.handStates = [];
         this.startTime = null;
         this.elapsedTime = 0;
         this.intervalId = null;
     }
 
-    get ctx() {
+    get ctx(): CanvasRenderingContext2D {
         return this.gameContext.ctx;
     }
 
-    update(handsData) {
+    update(handsData: Landmarks[]): void {
         if (this.state === 'CALIBRATING') {
             this.handleCalibration(handsData);
         } else if (this.state === 'WAITING') {
@@ -28,23 +42,22 @@ export class Player {
         } else if (this.state === 'PLAYING') {
             this.handleGameplay(handsData);
         } else if (this.state === 'LOSE') {
-            this.drawWaiting(true); // Draw frozen
+            this.drawWaiting(true);
         }
     }
 
-    handleCalibration(handsData) {
+    handleCalibration(handsData: Landmarks[]): void {
         const ctx = this.ctx;
-        // Neon instruction text - enlarged for distance viewing
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 18;
-        ctx.font = "900 42px 'Orbitron', 'Sora', sans-serif";
+        ctx.font = "900 42px 'Sora', sans-serif";
         ctx.textAlign = "center";
-        let msgX = this.bounds.x + this.bounds.w / 2;
+        const msgX = this.bounds.x + this.bounds.w / 2;
         ctx.fillText(`PLAYER ${this.id}: Angkat 2 Tangan`, msgX, 70);
 
-        ctx.font = "bold 28px 'Segoe UI', 'Sora', sans-serif";
+        ctx.font = "bold 26px 'Sora', sans-serif";
         ctx.fillStyle = "#FFFFFF";
         ctx.shadowColor = "#000000";
         ctx.shadowBlur = 12;
@@ -56,25 +69,25 @@ export class Player {
         ctx.restore();
 
         if (handsData.length >= 2) {
-            let hA = handsData[0];
-            let hB = handsData[1];
+            const hA = handsData[0];
+            const hB = handsData[1];
 
-            let leftHand = hA[0].x < hB[0].x ? hA : hB;
-            let rightHand = hA[0].x < hB[0].x ? hB : hA;
+            const leftHand = hA[0].x < hB[0].x ? hA : hB;
+            const rightHand = hA[0].x < hB[0].x ? hB : hA;
 
-            let pLeftThumb = leftHand[4];
-            let pRightIndex = rightHand[8];
+            const pLeftThumb = leftHand[4];
+            const pRightIndex = rightHand[8];
 
-            let left = Math.min(pLeftThumb.x, pRightIndex.x);
-            let right = Math.max(pLeftThumb.x, pRightIndex.x);
-            let top = Math.min(pLeftThumb.y, pRightIndex.y);
-            let bottom = Math.max(pLeftThumb.y, pRightIndex.y);
+            const left = Math.min(pLeftThumb.x, pRightIndex.x);
+            const right = Math.max(pLeftThumb.x, pRightIndex.x);
+            const top = Math.min(pLeftThumb.y, pRightIndex.y);
+            const bottom = Math.max(pLeftThumb.y, pRightIndex.y);
 
-            let w = right - left;
-            let h = bottom - top;
+            const w = right - left;
+            const h = bottom - top;
 
             if (w > 50 && h > 50) {
-                this.box = { x: left, y: top, w: w, h: h };
+                this.box = { x: left, y: top, w, h };
 
                 ctx.save();
                 ctx.strokeStyle = "white";
@@ -84,10 +97,9 @@ export class Player {
                 ctx.strokeRect(this.box.x, this.box.y, this.box.w, this.box.h);
                 ctx.restore();
 
-                let pinchLeft = getDistance(leftHand[4], leftHand[8]) < PINCH_THRESHOLD;
-                let pinchRight = getDistance(rightHand[4], rightHand[8]) < PINCH_THRESHOLD;
+                const pinchLeft = getDistance(leftHand[4], leftHand[8]) < PINCH_THRESHOLD;
+                const pinchRight = getDistance(rightHand[4], rightHand[8]) < PINCH_THRESHOLD;
 
-                // Glowing line effect when about to capture in calibration
                 if (pinchLeft) {
                     ctx.save();
                     ctx.strokeStyle = "white";
@@ -121,33 +133,39 @@ export class Player {
         }
     }
 
-    capturePuzzle() {
+    capturePuzzle(): void {
+        if (!this.box) return;
         const ctx = this.ctx;
-        let imageData = ctx.getImageData(this.box.x, this.box.y, this.box.w, this.box.h);
-        let tempCanvas = document.createElement('canvas');
+        const imageData = ctx.getImageData(this.box.x, this.box.y, this.box.w, this.box.h);
+        const tempCanvas = document.createElement('canvas');
         tempCanvas.width = this.box.w;
         tempCanvas.height = this.box.h;
-        tempCanvas.getContext('2d').putImageData(imageData, 0, 0);
+        const tempCtx = tempCanvas.getContext('2d');
+        if (!tempCtx) return;
+        tempCtx.putImageData(imageData, 0, 0);
 
-        let pieceW = this.box.w / 3;
-        let pieceH = this.box.h / 3;
+        const pieceW = this.box.w / 3;
+        const pieceH = this.box.h / 3;
 
         this.pieces = [];
         this.slots = [];
 
         for (let i = 0; i < 9; i++) {
-            let row = Math.floor(i / 3);
-            let col = i % 3;
+            const row = Math.floor(i / 3);
+            const col = i % 3;
 
-            let pX = this.box.x + col * pieceW;
-            let pY = this.box.y + row * pieceH;
+            const pX = this.box.x + col * pieceW;
+            const pY = this.box.y + row * pieceH;
 
             this.slots.push({ x: pX, y: pY, w: pieceW, h: pieceH });
 
-            let pieceCanvas = document.createElement('canvas');
+            const pieceCanvas = document.createElement('canvas');
             pieceCanvas.width = pieceW;
             pieceCanvas.height = pieceH;
-            pieceCanvas.getContext('2d').drawImage(tempCanvas, col * pieceW, row * pieceH, pieceW, pieceH, 0, 0, pieceW, pieceH);
+            const pieceCtx = pieceCanvas.getContext('2d');
+            if (pieceCtx) {
+                pieceCtx.drawImage(tempCanvas, col * pieceW, row * pieceH, pieceW, pieceH, 0, 0, pieceW, pieceH);
+            }
 
             this.pieces.push({ id: i, currentSlot: i, image: pieceCanvas, drawX: pX, drawY: pY });
         }
@@ -161,9 +179,9 @@ export class Player {
         }
     }
 
-    shufflePuzzle() {
+    shufflePuzzle(): void {
         if (this.pieces.length === 0) return;
-        let slotIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        const slotIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
         do {
             for (let i = slotIndices.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -178,7 +196,7 @@ export class Player {
         });
     }
 
-    recalibrate() {
+    recalibrate(): void {
         this.state = 'CALIBRATING';
         this.box = null;
         this.pieces = [];
@@ -191,24 +209,26 @@ export class Player {
         this.elapsedTime = 0;
     }
 
-    startPlaying() {
+    startPlaying(): void {
         this.state = 'PLAYING';
         this.startTime = Date.now();
         if (this.intervalId) clearInterval(this.intervalId);
         this.intervalId = setInterval(() => {
-            this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+            if (this.startTime) {
+                this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+            }
         }, 1000);
     }
 
-    snapToSlot(piece) {
-        let slot = this.slots[piece.currentSlot];
+    snapToSlot(piece: PuzzlePiece): void {
+        const slot = this.slots[piece.currentSlot];
         if (slot) {
             piece.drawX = slot.x;
             piece.drawY = slot.y;
         }
     }
 
-    drawWaiting(isLose = false) {
+    drawWaiting(isLose: boolean = false): void {
         const ctx = this.ctx;
         this.pieces.forEach((p) => {
             ctx.drawImage(p.image, p.drawX, p.drawY);
@@ -222,14 +242,14 @@ export class Player {
             ctx.fillStyle = this.color;
             ctx.shadowColor = this.color;
             ctx.shadowBlur = 20;
-            ctx.font = "900 42px 'Orbitron', 'Sora', sans-serif";
+            ctx.font = "900 42px 'Sora', sans-serif";
             ctx.textAlign = "center";
             ctx.fillText("Menunggu lawan...", this.bounds.x + this.bounds.w / 2, 75);
             ctx.restore();
         }
     }
 
-    handleGameplay(handsData) {
+    handleGameplay(handsData: Landmarks[]): void {
         const ctx = this.ctx;
         // Grid Background
         ctx.save();
@@ -241,9 +261,9 @@ export class Player {
         // Release any held pieces from hands that are no longer detected
         if (this.handStates.length > handsData.length) {
             for (let i = handsData.length; i < this.handStates.length; i++) {
-                let hs = this.handStates[i];
+                const hs = this.handStates[i];
                 if (hs && hs.heldPieceIndex !== -1) {
-                    let piece = this.pieces[hs.heldPieceIndex];
+                    const piece = this.pieces[hs.heldPieceIndex];
                     if (piece) this.snapToSlot(piece);
                     hs.heldPieceIndex = -1;
                     hs.isPinching = false;
@@ -254,13 +274,13 @@ export class Player {
 
         // Process each active hand independently
         handsData.forEach((h, hIdx) => {
-            let cursor = { x: (h[4].x + h[8].x) / 2, y: (h[4].y + h[8].y) / 2 };
-            let pinching = getDistance(h[4], h[8]) < PINCH_THRESHOLD;
+            const cursor = { x: (h[4].x + h[8].x) / 2, y: (h[4].y + h[8].y) / 2 };
+            const pinching = getDistance(h[4], h[8]) < PINCH_THRESHOLD;
 
             // Draw cursor & pinch feedback for this hand
             ctx.save();
-            let pulse = pinching ? Math.abs(Math.sin(Date.now() / 120)) * 6 : 0;
-            let radius = pinching ? 12 + pulse : 8;
+            const pulse = pinching ? Math.abs(Math.sin(Date.now() / 120)) * 6 : 0;
+            const radius = pinching ? 12 + pulse : 8;
 
             ctx.fillStyle = pinching ? this.color : "rgba(255, 255, 255, 0.8)";
             ctx.shadowColor = pinching ? this.color : "white";
@@ -285,8 +305,8 @@ export class Player {
             ctx.fill();
             ctx.restore();
 
-            let elemUnderCursor = document.elementFromPoint(cursor.x, cursor.y);
-            let isOverInteractive = elemUnderCursor && elemUnderCursor.closest('button, .mode-card, a');
+            const elemUnderCursor = document.elementFromPoint(cursor.x, cursor.y);
+            const isOverInteractive = elemUnderCursor && elemUnderCursor.closest('button, .mode-card, a');
 
             let hState = this.handStates[hIdx];
             if (!hState) {
@@ -298,9 +318,9 @@ export class Player {
                 hState.isPinching = true;
                 if (hState.heldPieceIndex === -1 && !isOverInteractive) {
                     for (let i = 0; i < this.pieces.length; i++) {
-                        let p = this.pieces[i];
-                        let slot = this.slots[p.currentSlot];
-                        let alreadyHeld = this.handStates.some((hs, otherIdx) => otherIdx !== hIdx && hs.heldPieceIndex === i);
+                        const p = this.pieces[i];
+                        const slot = this.slots[p.currentSlot];
+                        const alreadyHeld = this.handStates.some((hs, otherIdx) => otherIdx !== hIdx && hs.heldPieceIndex === i);
                         if (!alreadyHeld && slot &&
                             cursor.x >= slot.x && cursor.x <= slot.x + slot.w &&
                             cursor.y >= slot.y && cursor.y <= slot.y + slot.h) {
@@ -312,7 +332,7 @@ export class Player {
             } else if (pinching && hState.isPinching) {
                 // Dragging held piece
                 if (hState.heldPieceIndex !== -1) {
-                    let p = this.pieces[hState.heldPieceIndex];
+                    const p = this.pieces[hState.heldPieceIndex];
                     if (p && this.slots[0]) {
                         p.drawX = cursor.x - this.slots[0].w / 2;
                         p.drawY = cursor.y - this.slots[0].h / 2;
@@ -322,15 +342,15 @@ export class Player {
                 // Pinch released: snap piece to nearest slot
                 hState.isPinching = false;
                 if (hState.heldPieceIndex !== -1) {
-                    let heldPiece = this.pieces[hState.heldPieceIndex];
+                    const heldPiece = this.pieces[hState.heldPieceIndex];
                     let targetSlotIndex = -1;
                     let minDist = Infinity;
 
                     for (let i = 0; i < this.slots.length; i++) {
-                        let slot = this.slots[i];
-                        let cx = slot.x + slot.w / 2;
-                        let cy = slot.y + slot.h / 2;
-                        let dist = getDistance(cursor, { x: cx, y: cy });
+                        const slot = this.slots[i];
+                        const cx = slot.x + slot.w / 2;
+                        const cy = slot.y + slot.h / 2;
+                        const dist = getDistance(cursor, { x: cx, y: cy });
                         if (dist < minDist) {
                             minDist = dist;
                             targetSlotIndex = i;
@@ -338,10 +358,10 @@ export class Player {
                     }
 
                     if (targetSlotIndex !== -1 && heldPiece && targetSlotIndex !== heldPiece.currentSlot) {
-                        let pieceInTarget = this.pieces.find(p => p.currentSlot === targetSlotIndex);
+                        const pieceInTarget = this.pieces.find(p => p.currentSlot === targetSlotIndex);
                         if (pieceInTarget) {
                             pieceInTarget.currentSlot = heldPiece.currentSlot;
-                            let isTargetHeldByOther = this.handStates.some((hs, otherIdx) => otherIdx !== hIdx && hs.heldPieceIndex === pieceInTarget.id);
+                            const isTargetHeldByOther = this.handStates.some((hs, otherIdx) => otherIdx !== hIdx && hs.heldPieceIndex === pieceInTarget.id);
                             if (!isTargetHeldByOther) {
                                 this.snapToSlot(pieceInTarget);
                             }
@@ -374,7 +394,7 @@ export class Player {
 
         // Render all held pieces on top with glow effect
         heldIndices.forEach(pieceIdx => {
-            let p = this.pieces[pieceIdx];
+            const p = this.pieces[pieceIdx];
             if (!p) return;
 
             ctx.globalAlpha = 0.85;
@@ -382,7 +402,7 @@ export class Player {
             ctx.globalAlpha = 1.0;
 
             ctx.save();
-            let pulseGlow = Math.abs(Math.sin(Date.now() / 150)) * 15;
+            const pulseGlow = Math.abs(Math.sin(Date.now() / 150)) * 15;
             ctx.strokeStyle = this.color;
             ctx.shadowColor = this.color;
             ctx.shadowBlur = 15 + pulseGlow;
@@ -391,40 +411,45 @@ export class Player {
             ctx.restore();
         });
 
-        // Timer Display - Enlarged for distance readability
+        // Timer Display
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 20;
-        ctx.font = "900 52px 'Orbitron', 'Sora', sans-serif";
+        ctx.font = "900 52px 'Sora', sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(`WAKTU: ${this.formatTime(this.elapsedTime)}`, this.bounds.x + this.bounds.w / 2, 75);
         ctx.restore();
     }
 
-    checkWin() {
-        let isWin = this.pieces.length === 9 && this.pieces.every(p => p.id === p.currentSlot);
+    checkWin(): void {
+        const isWin = this.pieces.length === 9 && this.pieces.every(p => p.id === p.currentSlot);
         if (isWin && this.state !== 'SOLVED') {
             this.state = 'SOLVED';
-            clearInterval(this.intervalId);
+            if (this.intervalId) {
+                clearInterval(this.intervalId);
+                this.intervalId = null;
+            }
 
             if (this.gameContext.getSelectedMode() === 'multi') {
-                let players = this.gameContext.getPlayers();
-                let loser = players.find(x => x.id !== this.id);
+                const players = this.gameContext.getPlayers();
+                const loser = players.find(x => x.id !== this.id);
                 if (loser) {
                     loser.state = 'LOSE';
-                    clearInterval(loser.intervalId);
+                    if (loser.intervalId) {
+                        clearInterval(loser.intervalId);
+                        loser.intervalId = null;
+                    }
                 }
             }
 
-            // Call win screen
             this.gameContext.triggerWinScreen(this);
         }
     }
 
-    formatTime(seconds) {
-        let m = Math.floor(seconds / 60).toString().padStart(2, '0');
-        let s = (seconds % 60).toString().padStart(2, '0');
+    formatTime(seconds: number): string {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
         return `${m}:${s}`;
     }
 }
