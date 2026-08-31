@@ -4,9 +4,10 @@ import { InGameControls } from './components/InGameControls';
 import { MainMenu } from './components/MainMenu';
 import { WinScreen } from './components/WinScreen';
 import { Player } from './core/Player';
-import { GameMode, WinnerInfo } from './types/game';
+import { GameMode, Language, WinnerInfo } from './types/game';
 
 export const App: React.FC = () => {
+    const [language, setLanguage] = useState<Language>('en');
     const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
     const [isCameraOn, setIsCameraOn] = useState<boolean>(false);
     const [isCameraLoading, setIsCameraLoading] = useState<boolean>(false);
@@ -88,6 +89,7 @@ export const App: React.FC = () => {
         <div className="relative w-screen h-screen overflow-hidden bg-[#070913] font-sora text-white">
             {/* Background Camera & Canvas Layer */}
             <GameCanvas
+                language={language}
                 isPlaying={isPlaying}
                 selectedMode={selectedMode}
                 isWinOpen={winner !== null}
@@ -100,6 +102,8 @@ export const App: React.FC = () => {
             {/* Main Menu Overlay */}
             {!isPlaying && winner === null && (
                 <MainMenu
+                    language={language}
+                    onLanguageChange={setLanguage}
                     selectedMode={selectedMode}
                     onSelectMode={handleSelectMode}
                     isCameraOn={isCameraOn}
@@ -112,6 +116,7 @@ export const App: React.FC = () => {
             {/* In-Game Controls Overlay */}
             {isPlaying && selectedMode && winner === null && (
                 <InGameControls
+                    language={language}
                     mode={selectedMode}
                     onShuffleP1={handleShuffleP1}
                     onRecalibrateP1={handleRecalibrateP1}
@@ -124,6 +129,7 @@ export const App: React.FC = () => {
             {/* Win Screen Overlay */}
             {winner !== null && selectedMode && (
                 <WinScreen
+                    language={language}
                     winner={winner}
                     mode={selectedMode}
                     onPlayAgain={handleReturnToMainMenu}

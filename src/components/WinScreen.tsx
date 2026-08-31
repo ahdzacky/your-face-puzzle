@@ -1,15 +1,18 @@
 import React from 'react';
+import { Language, translations } from '../i18n/translations';
 import { GameMode, WinnerInfo } from '../types/game';
 
 interface WinScreenProps {
+    language: Language;
     winner: WinnerInfo;
     mode: GameMode;
     onPlayAgain: () => void;
 }
 
-export const WinScreen: React.FC<WinScreenProps> = ({ winner, mode, onPlayAgain }) => {
+export const WinScreen: React.FC<WinScreenProps> = ({ language, winner, mode, onPlayAgain }) => {
+    const t = translations[language];
     const isMultiplayer = mode === 'multi';
-    const titleText = isMultiplayer ? `PLAYER ${winner.id} MENANG!` : 'SELESAI!';
+    const titleText = isMultiplayer ? t.playerWins(winner.id) : t.completed;
     const themeColor = winner.color || '#00f0ff';
 
     return (
@@ -53,7 +56,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({ winner, mode, onPlayAgain 
                     id="win-time"
                     className="font-tech text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-6 sm:mb-10 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.9)]"
                 >
-                    WAKTU: {winner.formattedTime}
+                    {t.timeLabel}: {winner.formattedTime}
                 </p>
 
                 {/* Play Again Button inside Card */}
@@ -62,7 +65,7 @@ export const WinScreen: React.FC<WinScreenProps> = ({ winner, mode, onPlayAgain 
                     onClick={onPlayAgain}
                     className="font-tech bg-white text-black font-black text-xl sm:text-2xl md:text-3xl px-8 sm:px-14 py-3 sm:py-4 rounded-full w-full max-w-md hover:bg-gray-200 hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.7)] tracking-wider cursor-pointer"
                 >
-                    MAIN LAGI
+                    {t.playAgain}
                 </button>
             </div>
         </div>

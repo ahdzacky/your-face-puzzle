@@ -61,10 +61,14 @@ export interface WinnerInfo {
     imageSrc: string;
 }
 
+export type { Language } from '../i18n/translations';
+
 export interface GameEngineContext {
     ctx: CanvasRenderingContext2D;
     canvasElement: HTMLCanvasElement;
     getSelectedMode: () => GameMode | null;
+    getLanguage: () => import('../i18n/translations').Language;
     getPlayers: () => import('../core/Player').Player[];
     triggerWinScreen: (winnerPlayer: import('../core/Player').Player) => void;
+    getCleanFrameCrop: (box: Box) => HTMLCanvasElement | null;
 }

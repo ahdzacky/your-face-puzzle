@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { COLOR_P1, COLOR_P2 } from '../constants';
 import { Player } from '../core/Player';
 import { createHandUiController, drawSkeleton, initMediaPipe } from '../core/handTracking';
-import { GameMode, Landmarks, WinnerInfo } from '../types/game';
+import { GameMode, Landmarks, Language, WinnerInfo } from '../types/game';
 import { Camera, MediaPipeResults } from '../types/mediapipe';
 
 interface GameCanvasProps {
+    language: Language;
     isPlaying: boolean;
     selectedMode: GameMode | null;
     isWinOpen: boolean;
@@ -16,6 +17,7 @@ interface GameCanvasProps {
 }
 
 export const GameCanvas: React.FC<GameCanvasProps> = ({
+    language,
     isPlaying,
     selectedMode,
     isWinOpen,
@@ -27,15 +29,21 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const gameCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const uiCursorCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    const cleanBgCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     const playersRef = useRef<Player[]>([]);
     const cameraInstanceRef = useRef<Camera | null>(null);
     const handUiControllerRef = useRef(createHandUiController());
 
     // Keep props in refs for use in the MediaPipe callback
+    const languageRef = useRef(language);
     const isPlayingRef = useRef(isPlaying);
     const selectedModeRef = useRef(selectedMode);
     const isWinOpenRef = useRef(isWinOpen);
+
+    useEffect(() => {
+        languageRef.current = language;
+    }, [language]);
 
     useEffect(() => {
         isPlayingRef.current = isPlaying;
@@ -60,7 +68,19 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                 ctx,
                 canvasElement: canvas,
                 getSelectedMode: () => selectedModeRef.current,
+                getLanguage: () => languageRef.current,
                 getPlayers: () => playersRef.current,
+                getCleanFrameCrop: (box: import('../types/game').Box) => {
+                    const cleanCanvas = cleanBgCanvasRef.current;
+                    if (!cleanCanvas) return null;
+                    const temp = document.createElement('canvas');
+                    temp.width = box.w;
+                    temp.height = box.h;
+                    const tCtx = temp.getContext('2d');
+                    if (!tCtx) return null;
+                    tCtx.drawImage(cleanCanvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+                    return temp;
+                },
                 triggerWinScreen: (winnerPlayer: Player) => {
                     const tempCanvas = document.createElement('canvas');
                     if (winnerPlayer.box) {
@@ -120,6 +140,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                 gameCanvasRef.current.height = window.innerHeight;
                 uiCursorCanvasRef.current.width = window.innerWidth;
                 uiCursorCanvasRef.current.height = window.innerHeight;
+                if (cleanBgCanvasRef.current) {
+                    cleanBgCanvasRef.current.width = window.innerWidth;
+                    cleanBgCanvasRef.current.height = window.innerHeight;
+                }
             }
         };
 
@@ -139,8 +163,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         const onResults = (results: MediaPipeResults) => {
             onCameraActive();
 
-            ctx.save();
-            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+            if (!cleanBgCanvasRef.current) {
+                cleanBgCanvasRef.current = document.createElement('canvas');
+            }
+            if (cleanBgCanvasRef.current.width !== gameCanvas.width || cleanBgCanvasRef.current.height !== gameCanvas.height) {
+                cleanBgCanvasRef.current.width = gameCanvas.width;
+                cleanBgCanvasRef.current.height = gameCanvas.height;
+            }
 
             const canvasRatio = gameCanvas.width / gameCanvas.height;
             const videoRatio = (results.image.width || 1280) / (results.image.height || 720);
@@ -158,11 +187,23 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                 dy = 0;
             }
 
-            // Draw mirrored webcam background
-            ctx.translate(gameCanvas.width, 0);
-            ctx.scale(-1, 1);
+            // Draw pristine mirrored webcam image to clean offscreen buffer
+            const cleanCanvas = cleanBgCanvasRef.current;
+            const cleanCtx = cleanCanvas.getContext('2d', { willReadFrequently: true });
+            if (cleanCtx) {
+                cleanCtx.save();
+                cleanCtx.clearRect(0, 0, cleanCanvas.width, cleanCanvas.height);
+                cleanCtx.translate(cleanCanvas.width, 0);
+                cleanCtx.scale(-1, 1);
+                cleanCtx.drawImage(results.image as CanvasImageSource, dx, dy, dw, dh);
+                cleanCtx.restore();
+            }
+
+            // Draw dimmed mirrored background to visible gameCanvas
+            ctx.save();
+            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
             ctx.filter = "brightness(0.5)";
-            ctx.drawImage(results.image as CanvasImageSource, dx, dy, dw, dh);
+            ctx.drawImage(cleanCanvas, 0, 0);
             ctx.filter = "none";
             ctx.restore();
 

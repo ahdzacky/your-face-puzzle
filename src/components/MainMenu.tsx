@@ -1,8 +1,12 @@
 import React from 'react';
+import { Language, translations } from '../i18n/translations';
 import { GameMode } from '../types/game';
 import { Footer } from './Footer';
+import { LanguageSelector } from './LanguageSelector';
 
 interface MainMenuProps {
+    language: Language;
+    onLanguageChange: (lang: Language) => void;
     selectedMode: GameMode | null;
     onSelectMode: (mode: GameMode) => void;
     isCameraOn: boolean;
@@ -12,6 +16,8 @@ interface MainMenuProps {
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({
+    language,
+    onLanguageChange,
     selectedMode,
     onSelectMode,
     isCameraOn,
@@ -19,6 +25,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     onActivateCamera,
     onStartGame
 }) => {
+    const t = translations[language];
     const isStartEnabled = isCameraOn && selectedMode !== null;
 
     return (
@@ -26,12 +33,17 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             id="ui-layer"
             className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-black/50 backdrop-blur-md transition-opacity duration-500 flex flex-col p-4 sm:p-6 md:p-8"
         >
+            {/* Top Bar with Language Selector */}
+            <div className="w-full max-w-5xl mx-auto flex justify-end items-center pt-1 pb-2">
+                <LanguageSelector language={language} onLanguageChange={onLanguageChange} />
+            </div>
+
             {/* Inner Content Center Container */}
             <div className="w-full max-w-5xl m-auto flex flex-col items-center py-2 sm:py-4">
                 {/* Title Section */}
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 md:mb-8 tracking-widest uppercase text-center flex flex-wrap justify-center items-center gap-x-3 sm:gap-x-4 gap-y-1">
-                    <span className="title-outline-cyan px-2 py-1">YOUR FACE</span>
-                    <span className="title-outline-pink px-2 py-1">PUZZLE</span>
+                    <span className="title-outline-cyan px-2 py-1">{t.titleFace}</span>
+                    <span className="title-outline-pink px-2 py-1">{t.titlePuzzle}</span>
                 </h1>
 
                 {/* Game Modes Container */}
@@ -62,10 +74,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                         </div>
                         <div>
                             <h2 className="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#00f0ff] tracking-wider drop-shadow-[0_0_8px_rgba(0,240,255,0.7)]">
-                                SINGLE PLAYER
+                                {t.singlePlayerTitle}
                             </h2>
                             <p className="text-xs sm:text-sm md:text-lg text-gray-200 leading-snug sm:leading-relaxed font-normal">
-                                Main sendiri! Selesaikan puzzle<br className="hidden sm:inline" /> wajahmu secepat mungkin.
+                                {t.singlePlayerDesc}
                             </p>
                         </div>
                     </div>
@@ -98,11 +110,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                         </div>
                         <div>
                             <h2 className="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#ff2a85] tracking-wider drop-shadow-[0_0_8px_rgba(255,42,133,0.7)]">
-                                MULTIPLAYER
+                                {t.multiplayerTitle}
                             </h2>
                             <p className="text-xs sm:text-sm md:text-lg text-gray-200 leading-snug sm:leading-relaxed font-normal">
-                                Berdua lebih seru! Siapa yang tercepat<br className="hidden sm:inline" /> menyelesaikan, dia yang
-                                menang.
+                                {t.multiplayerDesc}
                             </p>
                         </div>
                     </div>
@@ -111,13 +122,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 {/* Rules Section */}
                 <div className="text-center mb-6 md:mb-8 max-w-4xl px-2">
                     <h3 className="text-base sm:text-lg md:text-2xl font-extrabold mb-1.5 md:mb-3 text-white tracking-wider">
-                        ATURAN:
+                        {t.rulesTitle}
                     </h3>
                     <p className="text-gray-200 text-xs sm:text-sm md:text-lg leading-relaxed font-normal">
-                        Gunakan tanganmu untuk screenshot wajahmu. Lalu susun puzzle dengan menjentikkan jari!
+                        {t.rule1}
                     </p>
                     <p className="text-gray-200 text-xs sm:text-sm md:text-lg leading-relaxed font-normal pt-1">
-                        Tangan juga bisa untuk klik tombol, jentikkan jari (pinch) atau tahan tangan di atas tombol!
+                        {t.rule2}
                     </p>
                 </div>
 
@@ -135,10 +146,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                         }`}
                     >
                         <span className="text-[#00f0ff] font-black tracking-wider drop-shadow-[0_0_10px_rgba(0,240,255,0.9)]">
-                            START
+                            {t.start}
                         </span>
                         <span className="text-[#ff2a85] font-black tracking-wider drop-shadow-[0_0_10px_rgba(255,42,133,0.9)]">
-                            GAME
+                            {t.game}
                         </span>
                     </button>
 
@@ -156,16 +167,16 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                         }`}
                     >
                         {isCameraOn
-                            ? 'CAMERA ACTIVE'
+                            ? t.cameraActive
                             : isCameraLoading
-                            ? 'LOADING CAMERA...'
-                            : 'ACTIVATE CAMERA'}
+                            ? t.loadingCamera
+                            : t.activateCamera}
                     </button>
                 </div>
             </div>
 
             {/* Footer */}
-            <Footer />
+            <Footer language={language} />
         </div>
     );
 };

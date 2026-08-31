@@ -1,4 +1,5 @@
 import { PINCH_THRESHOLD, getDistance } from '../constants';
+import { translations } from '../i18n/translations';
 import { Box, GameEngineContext, HandState, Landmarks, PlayerState, PuzzlePiece, Slot } from '../types/game';
 
 export class Player {
@@ -48,6 +49,9 @@ export class Player {
 
     handleCalibration(handsData: Landmarks[]): void {
         const ctx = this.ctx;
+        const lang = this.gameContext.getLanguage ? this.gameContext.getLanguage() : 'en';
+        const t = translations[lang] || translations.en;
+
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
@@ -55,17 +59,17 @@ export class Player {
         ctx.font = "900 42px 'Sora', sans-serif";
         ctx.textAlign = "center";
         const msgX = this.bounds.x + this.bounds.w / 2;
-        ctx.fillText(`PLAYER ${this.id}: Angkat 2 Tangan`, msgX, 70);
+        ctx.fillText(t.playerRaiseHands(this.id), msgX, 70);
 
         ctx.font = "bold 26px 'Sora', sans-serif";
         ctx.fillStyle = "#FFFFFF";
         ctx.shadowColor = "#000000";
         ctx.shadowBlur = 12;
-        ctx.fillText(`Bentangkan telunjuk & jempol untuk membuat kotak.`, msgX, 115);
+        ctx.fillText(t.spreadFingers, msgX, 115);
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 15;
-        ctx.fillText(`Jentikkan keduanya untuk memotret!`, msgX, 155);
+        ctx.fillText(t.pinchToCapture, msgX, 155);
         ctx.restore();
 
         if (handsData.length >= 2) {
@@ -135,14 +139,8 @@ export class Player {
 
     capturePuzzle(): void {
         if (!this.box) return;
-        const ctx = this.ctx;
-        const imageData = ctx.getImageData(this.box.x, this.box.y, this.box.w, this.box.h);
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = this.box.w;
-        tempCanvas.height = this.box.h;
-        const tempCtx = tempCanvas.getContext('2d');
-        if (!tempCtx) return;
-        tempCtx.putImageData(imageData, 0, 0);
+        const tempCanvas = this.gameContext.getCleanFrameCrop(this.box);
+        if (!tempCanvas) return;
 
         const pieceW = this.box.w / 3;
         const pieceH = this.box.h / 3;
@@ -238,13 +236,16 @@ export class Player {
         });
 
         if (!isLose) {
+            const lang = this.gameContext.getLanguage ? this.gameContext.getLanguage() : 'en';
+            const t = translations[lang] || translations.en;
+
             ctx.save();
             ctx.fillStyle = this.color;
             ctx.shadowColor = this.color;
             ctx.shadowBlur = 20;
             ctx.font = "900 42px 'Sora', sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText("Menunggu lawan...", this.bounds.x + this.bounds.w / 2, 75);
+            ctx.fillText(t.waitingOpponent, this.bounds.x + this.bounds.w / 2, 75);
             ctx.restore();
         }
     }
@@ -412,13 +413,16 @@ export class Player {
         });
 
         // Timer Display
+        const lang = this.gameContext.getLanguage ? this.gameContext.getLanguage() : 'en';
+        const t = translations[lang] || translations.en;
+
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 20;
         ctx.font = "900 52px 'Sora', sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(`WAKTU: ${this.formatTime(this.elapsedTime)}`, this.bounds.x + this.bounds.w / 2, 75);
+        ctx.fillText(`${t.timeLabel}: ${this.formatTime(this.elapsedTime)}`, this.bounds.x + this.bounds.w / 2, 75);
         ctx.restore();
     }
 
