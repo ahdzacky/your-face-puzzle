@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+    --font-sora: 'Sora', sans-serif;
+    --font-tech: 'Sora', sans-serif;
+    --color-cyan-neon: #00f0ff;
+    --color-pink-neon: #ff2a85;
+}
 
 @layer utilities {
     .font-tech {
