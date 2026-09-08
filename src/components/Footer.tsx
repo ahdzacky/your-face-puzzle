@@ -17,7 +17,30 @@ export const Footer: React.FC<FooterProps> = ({ language = 'en' }) => {
 
             {/* Social Media Rounded Icon Buttons */}
             <div className="flex items-center gap-3 sm:gap-4">
-                {/* LinkedIn (Leftmost) */}
+                {/* Personal Website */}
+                <a
+                    href="https://ahmadzacky.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Personal Website"
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center bg-[#090f1d]/80 backdrop-blur-md border border-gray-700/70 text-gray-400 hover:text-[#00f0ff] hover:border-[#00f0ff] hover:bg-[#00f0ff]/10 hover:shadow-[0_0_15px_rgba(0,240,255,0.7)] transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                >
+                    <svg
+                        className="w-5 h-5 sm:w-5 sm:h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                </a>
+
+                {/* LinkedIn */}
                 <a
                     href="https://www.linkedin.com/in/ahdzacky/"
                     target="_blank"
@@ -81,6 +104,27 @@ export const Footer: React.FC<FooterProps> = ({ language = 'en' }) => {
                         <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
                         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                         <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                    </svg>
+                </a>
+
+                {/* TikTok */}
+                <a
+                    href="https://www.tiktok.com/@ahdzacky23"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="TikTok Profile"
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center bg-[#090f1d]/80 backdrop-blur-md border border-gray-700/70 text-gray-400 hover:text-[#fe2c55] hover:border-[#fe2c55] hover:bg-[#fe2c55]/10 hover:shadow-[0_0_15px_rgba(254,44,85,0.7)] transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
+                >
+                    <svg
+                        className="w-5 h-5 sm:w-5 sm:h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <path d="M21 7.917v4.034a9.948 9.948 0 0 1 -5 -1.951v4.5a6.5 6.5 0 1 1 -8 -6.326v4.326a2.5 2.5 0 1 0 4 2v-11.5h4.083a6.005 6.005 0 0 0 4.917 4.917" />
                     </svg>
                 </a>
             </div>
