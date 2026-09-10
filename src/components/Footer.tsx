@@ -12,7 +12,16 @@ export const Footer: React.FC<FooterProps> = ({ language = 'en' }) => {
         <footer className="w-full mt-auto pt-6 pb-3 px-3 sm:px-6 md:px-8 flex flex-col items-center justify-center gap-3 text-xs sm:text-sm md:text-base text-gray-400 font-medium shrink-0 text-center">
             {/* Creator Name */}
             <div>
-                {t.createdBy} <span className="text-white font-semibold tracking-wide">Ahmad Miftahul Zaki</span>
+                {t.createdBy}{' '}
+                <a
+                    id="creator-website-link"
+                    href="https://ahmadzacky.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white font-semibold tracking-wide hover:text-[#00f0ff] hover:drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] decoration-transparent hover:decoration-[#00f0ff] transition-all duration-300 cursor-pointer"
+                >
+                    Ahmad Miftahul Zaki
+                </a>
             </div>
 
             {/* Social Media Rounded Icon Buttons */}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Language, translations } from '../i18n/translations';
-import { GameMode } from '../types/game';
+import { CameraDevice, CameraPermissionState, GameMode } from '../types/game';
+import { CameraSelector } from './CameraSelector';
 import { Footer } from './Footer';
 import { LanguageSelector } from './LanguageSelector';
 
@@ -11,8 +12,12 @@ interface MainMenuProps {
     onSelectMode: (mode: GameMode) => void;
     isCameraOn: boolean;
     isCameraLoading: boolean;
+    cameraPermission?: CameraPermissionState;
     onActivateCamera: () => void;
     onStartGame: () => void;
+    devices: CameraDevice[];
+    selectedDeviceId: string | null;
+    onSelectDevice: (deviceId: string) => void;
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({
@@ -22,8 +27,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     onSelectMode,
     isCameraOn,
     isCameraLoading,
+    cameraPermission = 'unknown',
     onActivateCamera,
-    onStartGame
+    onStartGame,
+    devices,
+    selectedDeviceId,
+    onSelectDevice
 }) => {
     const t = translations[language];
     const isStartEnabled = isCameraOn && selectedMode !== null;
@@ -52,9 +61,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                     <div
                         id="card-single"
                         onClick={() => onSelectMode('single')}
-                        className={`mode-card mode-card-single group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left ${
-                            selectedMode === 'single' ? 'selected' : ''
-                        }`}
+                        className={`mode-card mode-card-single group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left ${selectedMode === 'single' ? 'selected' : ''
+                            }`}
                     >
                         <div className="flex-shrink-0 text-[#00f0ff]">
                             {/* Single User Icon */}
@@ -86,9 +94,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                     <div
                         id="card-multi"
                         onClick={() => onSelectMode('multi')}
-                        className={`mode-card mode-card-multi group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left ${
-                            selectedMode === 'multi' ? 'selected' : ''
-                        }`}
+                        className={`mode-card mode-card-multi group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left ${selectedMode === 'multi' ? 'selected' : ''
+                            }`}
                     >
                         <div className="flex-shrink-0 text-[#ff2a85]">
                             {/* Users Icon */}
@@ -133,17 +140,59 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col gap-3 sm:gap-4 md:gap-6 w-full max-w-md items-center mb-2 sm:mb-4">
-                    {/* Start Game Button */}
+                <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 w-full max-w-md items-center mb-2 sm:mb-4">
+                    {/* 1. Camera Selector (Top) */}
+                    <div className="flex flex-col items-center gap-1.5 w-full max-w-xs sm:max-w-sm">
+                        <CameraSelector
+                            language={language}
+                            devices={devices}
+                            selectedDeviceId={selectedDeviceId}
+                            onSelectDevice={onSelectDevice}
+                            isCameraOn={isCameraOn}
+                            cameraPermission={cameraPermission}
+                            onActivateCamera={onActivateCamera}
+                        />
+                    </div>
+
+                    {/* 2. Activate Camera Button (Middle) */}
+                    <button
+                        id="btn-start-cam"
+                        onClick={onActivateCamera}
+                        disabled={isCameraLoading || (isCameraOn && cameraPermission !== 'denied')}
+                        className={`w-full max-w-xs sm:max-w-sm h-12 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base uppercase tracking-widest border-2 transition-all backdrop-blur-md shadow-md flex items-center justify-center ${cameraPermission === 'denied'
+                            ? 'bg-red-950/50 border-red-500 text-red-300 hover:border-red-400 hover:text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] cursor-pointer'
+                            : isCameraOn
+                                ? 'bg-[#00f0ff]/20 text-[#00f0ff] border-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.6)] cursor-default'
+                                : isCameraLoading
+                                    ? 'bg-[#090e1a]/80 border-cyan-400 text-cyan-300 animate-pulse cursor-wait'
+                                    : 'bg-[#090e1a]/60 border-gray-600/80 text-gray-300 hover:border-gray-400 hover:text-white cursor-pointer'
+                            }`}
+                    >
+                        {cameraPermission === 'denied'
+                            ? `${t.retry} - ${t.activateCamera}`
+                            : isCameraLoading
+                                ? t.loadingCamera
+                                : isCameraOn
+                                    ? t.cameraActive
+                                    : t.activateCamera}
+                    </button>
+
+                    {/* Camera Permission Denied Helper Guide (only when blocked) */}
+                    {cameraPermission === 'denied' && (
+                        <p className="text-xs text-red-400 text-center max-w-xs sm:max-w-sm px-2 -mt-1 leading-relaxed">
+                            {t.cameraPermissionGuide}
+                        </p>
+                    )}
+
+                    {/* 3. Start Game Button (Bottom) */}
                     <button
                         id="btn-start-game"
                         onClick={onStartGame}
                         disabled={!isStartEnabled}
-                        className={`btn-dual-glow w-full max-w-xs sm:max-w-sm py-3.5 sm:py-4 px-6 sm:px-8 rounded-full font-black text-lg sm:text-xl md:text-3xl uppercase tracking-wider flex justify-center items-center gap-2 sm:gap-3 shadow-2xl transition-all duration-300 ${
-                            isStartEnabled
-                                ? 'cursor-pointer opacity-100 hover:scale-[1.03]'
-                                : 'cursor-not-allowed opacity-40'
-                        }`}
+                        className={`btn-dual-glow w-full max-w-xs sm:max-w-sm py-3.5 sm:py-4 px-6 sm:px-8 rounded-full font-black text-lg sm:text-xl md:text-3xl uppercase tracking-wider flex justify-center items-center gap-2 sm:gap-3 shadow-2xl transition-all duration-300 ${isStartEnabled
+                            ? 'cursor-pointer opacity-100 hover:scale-[1.03]'
+                            : 'cursor-not-allowed opacity-40'
+                            }`}
                     >
                         <span className="text-[#00f0ff] font-black tracking-wider drop-shadow-[0_0_10px_rgba(0,240,255,0.9)]">
                             {t.start}
@@ -151,26 +200,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                         <span className="text-[#ff2a85] font-black tracking-wider drop-shadow-[0_0_10px_rgba(255,42,133,0.9)]">
                             {t.game}
                         </span>
-                    </button>
-
-                    {/* Activate Camera Button */}
-                    <button
-                        id="btn-start-cam"
-                        onClick={onActivateCamera}
-                        disabled={isCameraOn || isCameraLoading}
-                        className={`w-full max-w-xs sm:max-w-sm py-3 sm:py-3.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-lg uppercase tracking-widest border-2 transition-all backdrop-blur-md shadow-md ${
-                            isCameraOn
-                                ? 'bg-[#00f0ff]/20 text-[#00f0ff] border-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.6)] cursor-default'
-                                : isCameraLoading
-                                ? 'bg-[#090e1a]/80 border-cyan-400 text-cyan-300 animate-pulse cursor-wait'
-                                : 'bg-[#090e1a]/60 border-gray-600/80 text-gray-300 hover:border-gray-400 hover:text-white cursor-pointer'
-                        }`}
-                    >
-                        {isCameraOn
-                            ? t.cameraActive
-                            : isCameraLoading
-                            ? t.loadingCamera
-                            : t.activateCamera}
                     </button>
                 </div>
             </div>

@@ -2,18 +2,22 @@ import React, { useEffect, useRef } from 'react';
 import { COLOR_P1, COLOR_P2 } from '../constants';
 import { Player } from '../core/Player';
 import { createHandUiController, drawSkeleton, initMediaPipe } from '../core/handTracking';
-import { GameMode, Landmarks, Language, WinnerInfo } from '../types/game';
-import { Camera, MediaPipeResults } from '../types/mediapipe';
+import { CameraController } from '../core/cameraManager';
+import { CameraDevice, GameMode, Landmarks, Language, WinnerInfo } from '../types/game';
+import { MediaPipeResults } from '../types/mediapipe';
 
 interface GameCanvasProps {
     language: Language;
     isPlaying: boolean;
     selectedMode: GameMode | null;
     isWinOpen: boolean;
+    selectedDeviceId: string | null;
     onCameraActive: () => void;
+    onCameraInactive?: () => void;
     onWin: (winnerInfo: WinnerInfo) => void;
     setPlayersRef: (players: Player[]) => void;
-    cameraTriggerRef: React.MutableRefObject<(() => Promise<void>) | null>;
+    cameraTriggerRef: React.MutableRefObject<((deviceId?: string) => Promise<void>) | null>;
+    onDevicesUpdated?: (devices: CameraDevice[]) => void;
 }
 
 export const GameCanvas: React.FC<GameCanvasProps> = ({
@@ -21,10 +25,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     isPlaying,
     selectedMode,
     isWinOpen,
+    selectedDeviceId,
     onCameraActive,
+    onCameraInactive,
     onWin,
     setPlayersRef,
-    cameraTriggerRef
+    cameraTriggerRef,
+    onDevicesUpdated
 }) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const gameCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -32,7 +39,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const cleanBgCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
     const playersRef = useRef<Player[]>([]);
-    const cameraInstanceRef = useRef<Camera | null>(null);
+    const cameraInstanceRef = useRef<CameraController | null>(null);
     const handUiControllerRef = useRef(createHandUiController());
 
     // Keep props in refs for use in the MediaPipe callback
@@ -40,6 +47,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const isPlayingRef = useRef(isPlaying);
     const selectedModeRef = useRef(selectedMode);
     const isWinOpenRef = useRef(isWinOpen);
+    const selectedDeviceIdRef = useRef(selectedDeviceId);
+    const onDevicesUpdatedRef = useRef(onDevicesUpdated);
+    const onCameraInactiveRef = useRef(onCameraInactive);
+
+    useEffect(() => {
+        onCameraInactiveRef.current = onCameraInactive;
+    }, [onCameraInactive]);
 
     useEffect(() => {
         languageRef.current = language;
@@ -56,6 +70,36 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     useEffect(() => {
         isWinOpenRef.current = isWinOpen;
     }, [isWinOpen]);
+
+    useEffect(() => {
+        selectedDeviceIdRef.current = selectedDeviceId;
+        if (cameraInstanceRef.current && selectedDeviceId) {
+            cameraInstanceRef.current.switchDevice(selectedDeviceId).catch((err) => {
+                console.warn('Failed to switch camera device:', err);
+            });
+        }
+    }, [selectedDeviceId]);
+
+    useEffect(() => {
+        onDevicesUpdatedRef.current = onDevicesUpdated;
+    }, [onDevicesUpdated]);
+
+    // Handle device changes (e.g. plugging/unplugging webcam)
+    useEffect(() => {
+        const handleDeviceChange = async () => {
+            const devices = await CameraController.getAvailableDevices();
+            if (onDevicesUpdatedRef.current) {
+                onDevicesUpdatedRef.current(devices);
+            }
+        };
+
+        if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+            navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+            return () => {
+                navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+            };
+        }
+    }, []);
 
     // Handle game start and mode changes
     useEffect(() => {
@@ -292,17 +336,28 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
         const { camera } = initMediaPipe({
             videoElement,
-            onResultsCallback: onResults
+            onResultsCallback: onResults,
+            onCameraInactive: () => {
+                if (onCameraInactiveRef.current) {
+                    onCameraInactiveRef.current();
+                }
+            }
         });
 
         cameraInstanceRef.current = camera;
 
-        const startCam = async () => {
+        const startCam = async (deviceId?: string) => {
             if (cameraInstanceRef.current) {
                 try {
-                    await cameraInstanceRef.current.start();
+                    const targetId = deviceId || selectedDeviceIdRef.current || undefined;
+                    await cameraInstanceRef.current.start(targetId);
+                    const devices = await CameraController.getAvailableDevices();
+                    if (onDevicesUpdatedRef.current) {
+                        onDevicesUpdatedRef.current(devices);
+                    }
                 } catch (err) {
                     console.warn("Camera start failed, waiting for user click:", err);
+                    throw err;
                 }
             }
         };
@@ -310,12 +365,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         cameraTriggerRef.current = startCam;
 
         // Auto attempt to start camera
-        startCam();
+        startCam().catch(() => {});
 
         return () => {
             window.removeEventListener('resize', resizeCanvas);
             if (cameraInstanceRef.current) {
-                cameraInstanceRef.current.stop().catch(() => {});
+                cameraInstanceRef.current.stop();
             }
         };
     }, [onCameraActive, cameraTriggerRef]);

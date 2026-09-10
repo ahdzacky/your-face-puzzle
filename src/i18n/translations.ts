@@ -16,6 +16,18 @@ export interface TranslationSchema {
     activateCamera: string;
     loadingCamera: string;
     cameraActive: string;
+    cameraSelect: string;
+    defaultCamera: string;
+    switchCamera: string;
+    noCameraFound: string;
+    cameraPermissionHint: string;
+    cameraPermissionDenied: string;
+    cameraPermissionNotGranted: string;
+    cameraStatusDenied: string;
+    cameraStatusPrompt: string;
+    cameraStatusGranted: string;
+    cameraPermissionGuide: string;
+    retry: string;
 
     // In-game Controls
     shuffle: string;
@@ -58,6 +70,18 @@ export const translations: Record<Language, TranslationSchema> = {
         activateCamera: 'ACTIVATE CAMERA',
         loadingCamera: 'LOADING CAMERA...',
         cameraActive: 'CAMERA ACTIVE',
+        cameraSelect: 'CAMERA',
+        defaultCamera: 'DEFAULT CAMERA',
+        switchCamera: 'CHANGE CAMERA',
+        noCameraFound: 'NO CAMERA FOUND',
+        cameraPermissionHint: 'ACTIVATE CAMERA TO LIST DEVICES',
+        cameraPermissionDenied: 'Camera access blocked in browser settings',
+        cameraPermissionNotGranted: 'Camera access has not been granted yet',
+        cameraStatusDenied: 'CAMERA PERMISSION: DENIED',
+        cameraStatusPrompt: 'CAMERA PERMISSION: NOT GRANTED',
+        cameraStatusGranted: 'CAMERA PERMISSION: GRANTED',
+        cameraPermissionGuide: 'Click the lock or site settings icon in the address bar to allow camera access, then retry.',
+        retry: 'RETRY',
 
         shuffle: 'SHUFFLE',
         shuffleP1: 'P1: SHUFFLE',
@@ -94,6 +118,18 @@ export const translations: Record<Language, TranslationSchema> = {
         activateCamera: 'AKTIFKAN KAMERA',
         loadingCamera: 'MEMUAT KAMERA...',
         cameraActive: 'KAMERA AKTIF',
+        cameraSelect: 'KAMERA',
+        defaultCamera: 'KAMERA UTAMA',
+        switchCamera: 'GANTI KAMERA',
+        noCameraFound: 'KAMERA TIDAK DITEMUKAN',
+        cameraPermissionHint: 'AKTIFKAN KAMERA UNTUK MELIHAT PERANGKAT',
+        cameraPermissionDenied: 'Akses kamera diblokir di pengaturan browser',
+        cameraPermissionNotGranted: 'Akses kamera belum diizinkan',
+        cameraStatusDenied: 'IZIN KAMERA: DITOLAK',
+        cameraStatusPrompt: 'IZIN KAMERA: BELUM DIIZINKAN',
+        cameraStatusGranted: 'IZIN KAMERA: SUDAH DIIZINKAN',
+        cameraPermissionGuide: 'Klik ikon gembok atau pengaturan situs di address bar untuk mengizinkan kamera, lalu coba lagi.',
+        retry: 'COBA LAGI',
 
         shuffle: 'ACAK ULANG',
         shuffleP1: 'P1: ACAK',

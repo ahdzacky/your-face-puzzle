@@ -61,6 +61,13 @@ export interface WinnerInfo {
     imageSrc: string;
 }
 
+export interface CameraDevice {
+    deviceId: string;
+    label: string;
+}
+
+export type CameraPermissionState = 'granted' | 'denied' | 'prompt' | 'unknown';
+
 export type { Language } from '../i18n/translations';
 
 export interface GameEngineContext {

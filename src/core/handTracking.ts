@@ -1,6 +1,7 @@
 import { HAND_CONNECTIONS, PINCH_THRESHOLD, getDistance, COLOR_P1, COLOR_P2 } from '../constants';
 import { ClickRipple, HandUiState, Landmarks, Point } from '../types/game';
-import { Camera, Hands, MediaPipeResults } from '../types/mediapipe';
+import { Hands, MediaPipeResults } from '../types/mediapipe';
+import { CameraController } from './cameraManager';
 
 export function drawSkeleton(landmarks: Landmarks, color: string, targetCtx: CanvasRenderingContext2D): void {
     if (!landmarks || landmarks.length === 0) return;
@@ -191,13 +192,15 @@ export function createHandUiController() {
 
 export function initMediaPipe({
     videoElement,
-    onResultsCallback
+    onResultsCallback,
+    onCameraInactive
 }: {
     videoElement: HTMLVideoElement;
     onResultsCallback: (results: MediaPipeResults) => void;
-}): { hands: Hands | null; camera: Camera | null } {
-    if (typeof window === 'undefined' || !window.Hands || !window.Camera) {
-        console.warn('MediaPipe Hands or Camera is not yet loaded on window.');
+    onCameraInactive?: () => void;
+}): { hands: Hands | null; camera: CameraController | null } {
+    if (typeof window === 'undefined' || !window.Hands) {
+        console.warn('MediaPipe Hands is not yet loaded on window.');
         return { hands: null, camera: null };
     }
 
@@ -214,12 +217,14 @@ export function initMediaPipe({
 
     hands.onResults(onResultsCallback);
 
-    const camera = new window.Camera(videoElement, {
+    const camera = new CameraController({
+        videoElement,
         onFrame: async () => {
             await hands.send({ image: videoElement });
         },
         width: 1280,
-        height: 720
+        height: 720,
+        onTrackEnded: onCameraInactive
     });
 
     return { hands, camera };
