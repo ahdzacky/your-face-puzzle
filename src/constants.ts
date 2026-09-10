@@ -11,8 +11,8 @@ export const HAND_CONNECTIONS: [number, number][] = [
     [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]
 ];
 
-export const COLOR_P1 = "#00f0ff"; // Electric Cyan
-export const COLOR_P2 = "#ff2a85"; // Electric Neon Pink
+export const COLOR_P1 = "#23ffff"; // Electric Cyan
+export const COLOR_P2 = "#f23498"; // Electric Neon Pink
 
 export function getDistance(p1: Point, p2: Point): number {
     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));

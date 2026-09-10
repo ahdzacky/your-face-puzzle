@@ -1,4 +1,5 @@
 import React from 'react';
+import { User, Users } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
 import { CameraDevice, CameraPermissionState, GameMode } from '../types/game';
 import { CameraSelector } from './CameraSelector';
@@ -40,7 +41,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     return (
         <div
             id="ui-layer"
-            className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-black/50 backdrop-blur-md transition-opacity duration-500 flex flex-col p-4 sm:p-6 md:p-8"
+            className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-[#020304]/50 backdrop-blur-md transition-opacity duration-500 flex flex-col p-4 sm:p-6 md:p-8"
         >
             {/* Top Bar with Language Selector */}
             <div className="w-full max-w-5xl mx-auto flex justify-end items-center pt-1 pb-2">
@@ -56,35 +57,23 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                 </h1>
 
                 {/* Game Modes Container */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full mb-6 md:mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full mb-6 md:mb-8 items-stretch">
                     {/* Single Player Card */}
                     <div
                         id="card-single"
                         onClick={() => onSelectMode('single')}
-                        className={`mode-card mode-card-single group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left ${selectedMode === 'single' ? 'selected' : ''
+                        className={`mode-card mode-card-single group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left h-full ${selectedMode === 'single' ? 'selected' : ''
                             }`}
                     >
-                        <div className="flex-shrink-0 text-[#00f0ff]">
+                        <div className="flex-shrink-0 text-[#23ffff]">
                             {/* Single User Icon */}
-                            <svg
-                                className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 drop-shadow-[0_0_12px_rgba(0,240,255,0.9)]"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
+                            <User className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 drop-shadow-[0_0_12px_rgba(35,255,255,0.9)]" strokeWidth={2} />
                         </div>
                         <div>
-                            <h2 className="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#00f0ff] tracking-wider drop-shadow-[0_0_8px_rgba(0,240,255,0.7)]">
+                            <h2 className="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#23ffff] tracking-wider drop-shadow-[0_0_8px_rgba(35,255,255,0.7)]">
                                 {t.singlePlayerTitle}
                             </h2>
-                            <p className="text-xs sm:text-sm md:text-lg text-gray-200 leading-snug sm:leading-relaxed font-normal">
+                            <p className="text-xs sm:text-sm md:text-xl text-[#f2f3f4] leading-snug sm:leading-relaxed font-normal">
                                 {t.singlePlayerDesc}
                             </p>
                         </div>
@@ -94,32 +83,18 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                     <div
                         id="card-multi"
                         onClick={() => onSelectMode('multi')}
-                        className={`mode-card mode-card-multi group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left ${selectedMode === 'multi' ? 'selected' : ''
+                        className={`mode-card mode-card-multi group relative rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-8 flex items-center gap-4 sm:gap-5 text-left h-full ${selectedMode === 'multi' ? 'selected' : ''
                             }`}
                     >
-                        <div className="flex-shrink-0 text-[#ff2a85]">
+                        <div className="flex-shrink-0 text-[#f23498]">
                             {/* Users Icon */}
-                            <svg
-                                className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 drop-shadow-[0_0_12px_rgba(255,42,133,0.9)]"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
+                            <Users className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 drop-shadow-[0_0_12px_rgba(242,52,152,0.9)]" strokeWidth={2} />
                         </div>
                         <div>
-                            <h2 className="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#ff2a85] tracking-wider drop-shadow-[0_0_8px_rgba(255,42,133,0.7)]">
+                            <h2 className="text-lg sm:text-xl md:text-3xl font-black mb-1 md:mb-2 text-[#f23498] tracking-wider drop-shadow-[0_0_8px_rgba(242,52,152,0.7)]">
                                 {t.multiplayerTitle}
                             </h2>
-                            <p className="text-xs sm:text-sm md:text-lg text-gray-200 leading-snug sm:leading-relaxed font-normal">
+                            <p className="text-xs sm:text-sm md:text-xl text-[#f2f3f4] leading-snug sm:leading-relaxed font-normal">
                                 {t.multiplayerDesc}
                             </p>
                         </div>
@@ -131,10 +106,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                     <h3 className="text-base sm:text-lg md:text-2xl font-extrabold mb-1.5 md:mb-3 text-white tracking-wider">
                         {t.rulesTitle}
                     </h3>
-                    <p className="text-gray-200 text-xs sm:text-sm md:text-lg leading-relaxed font-normal">
+                    <p className="text-[#f2f3f4] text-xs sm:text-sm md:text-xl leading-relaxed font-normal">
                         {t.rule1}
                     </p>
-                    <p className="text-gray-200 text-xs sm:text-sm md:text-lg leading-relaxed font-normal pt-1">
+                    <p className="text-[#f2f3f4] text-xs sm:text-sm md:text-xl leading-relaxed font-normal pt-1">
                         {t.rule2}
                     </p>
                 </div>
@@ -159,13 +134,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                         id="btn-start-cam"
                         onClick={onActivateCamera}
                         disabled={isCameraLoading || (isCameraOn && cameraPermission !== 'denied')}
-                        className={`w-full max-w-xs sm:max-w-sm h-12 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base uppercase tracking-widest border-2 transition-all backdrop-blur-md shadow-md flex items-center justify-center ${cameraPermission === 'denied'
-                            ? 'bg-red-950/50 border-red-500 text-red-300 hover:border-red-400 hover:text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] cursor-pointer'
+                        className={`w-full max-w-xs sm:max-w-sm h-12 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-xl uppercase tracking-widest border-2 transition-all backdrop-blur-md shadow-md flex items-center justify-center ${cameraPermission === 'denied'
+                            ? 'bg-[#ff2304]/20 border-[#ff2304] text-[#ff2304] hover:border-[#ff2304] hover:text-white shadow-[0_0_15px_rgba(255,35,4,0.5)] cursor-pointer'
                             : isCameraOn
-                                ? 'bg-[#00f0ff]/20 text-[#00f0ff] border-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.6)] cursor-default'
+                                ? 'bg-[#23ffff]/20 text-[#23ffff] border-[#23ffff] shadow-[0_0_15px_rgba(35,255,255,0.6)] cursor-default'
                                 : isCameraLoading
-                                    ? 'bg-[#090e1a]/80 border-cyan-400 text-cyan-300 animate-pulse cursor-wait'
-                                    : 'bg-[#090e1a]/60 border-gray-600/80 text-gray-300 hover:border-gray-400 hover:text-white cursor-pointer'
+                                    ? 'bg-[#020304]/80 border-cyan-400 text-cyan-300 animate-pulse cursor-wait'
+                                    : 'bg-[#020304]/50 border-gray-600/80 text-[#f2f3f4] hover:border-gray-400 hover:text-white cursor-pointer'
                             }`}
                     >
                         {cameraPermission === 'denied'
@@ -179,7 +154,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 
                     {/* Camera Permission Denied Helper Guide (only when blocked) */}
                     {cameraPermission === 'denied' && (
-                        <p className="text-xs text-red-400 text-center max-w-xs sm:max-w-sm px-2 -mt-1 leading-relaxed">
+                        <p className="text-xs text-[#ff2304] text-center max-w-xs sm:max-w-sm px-2 -mt-1 leading-relaxed">
                             {t.cameraPermissionGuide}
                         </p>
                     )}
@@ -194,10 +169,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                             : 'cursor-not-allowed opacity-40'
                             }`}
                     >
-                        <span className="text-[#00f0ff] font-black tracking-wider drop-shadow-[0_0_10px_rgba(0,240,255,0.9)]">
+                        <span className="text-[#23ffff] font-black tracking-wider drop-shadow-[0_0_10px_rgba(35,255,255,0.9)]">
                             {t.start}
                         </span>
-                        <span className="text-[#ff2a85] font-black tracking-wider drop-shadow-[0_0_10px_rgba(255,42,133,0.9)]">
+                        <span className="text-[#f23498] font-black tracking-wider drop-shadow-[0_0_10px_rgba(242,52,152,0.9)]">
                             {t.game}
                         </span>
                     </button>

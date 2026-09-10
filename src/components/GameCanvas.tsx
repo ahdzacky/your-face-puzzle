@@ -11,6 +11,7 @@ interface GameCanvasProps {
     isPlaying: boolean;
     selectedMode: GameMode | null;
     isWinOpen: boolean;
+    isForcedLandscape?: boolean;
     selectedDeviceId: string | null;
     onCameraActive: () => void;
     onCameraInactive?: () => void;
@@ -25,6 +26,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     isPlaying,
     selectedMode,
     isWinOpen,
+    isForcedLandscape = false,
     selectedDeviceId,
     onCameraActive,
     onCameraInactive,
@@ -50,6 +52,15 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const selectedDeviceIdRef = useRef(selectedDeviceId);
     const onDevicesUpdatedRef = useRef(onDevicesUpdated);
     const onCameraInactiveRef = useRef(onCameraInactive);
+    const isForcedLandscapeRef = useRef(isForcedLandscape);
+    const resizeCanvasRef = useRef<(() => void) | null>(null);
+
+    useEffect(() => {
+        isForcedLandscapeRef.current = isForcedLandscape;
+        if (resizeCanvasRef.current) {
+            resizeCanvasRef.current();
+        }
+    }, [isForcedLandscape]);
 
     useEffect(() => {
         onCameraInactiveRef.current = onCameraInactive;
@@ -154,13 +165,17 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                 }
             };
 
+            const isForced = isForcedLandscapeRef.current;
+            const w = isForced ? Math.max(window.innerWidth, window.innerHeight) : canvas.width;
+            const h = isForced ? Math.min(window.innerWidth, window.innerHeight) : canvas.height;
+
             const newPlayers: Player[] = [];
             if (selectedMode === 'single') {
-                newPlayers.push(new Player(1, { x: 0, y: 0, w: canvas.width, h: canvas.height }, COLOR_P1, gameContext));
+                newPlayers.push(new Player(1, { x: 0, y: 0, w, h }, COLOR_P1, gameContext));
             } else {
-                const halfW = canvas.width / 2;
-                newPlayers.push(new Player(1, { x: 0, y: 0, w: halfW, h: canvas.height }, COLOR_P1, gameContext));
-                newPlayers.push(new Player(2, { x: halfW, y: 0, w: halfW, h: canvas.height }, COLOR_P2, gameContext));
+                const halfW = w / 2;
+                newPlayers.push(new Player(1, { x: 0, y: 0, w: halfW, h }, COLOR_P1, gameContext));
+                newPlayers.push(new Player(2, { x: halfW, y: 0, w: halfW, h }, COLOR_P2, gameContext));
             }
 
             playersRef.current = newPlayers;
@@ -180,18 +195,38 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     useEffect(() => {
         const resizeCanvas = () => {
             if (gameCanvasRef.current && uiCursorCanvasRef.current) {
-                gameCanvasRef.current.width = window.innerWidth;
-                gameCanvasRef.current.height = window.innerHeight;
-                uiCursorCanvasRef.current.width = window.innerWidth;
-                uiCursorCanvasRef.current.height = window.innerHeight;
+                const width = isForcedLandscapeRef.current
+                    ? Math.max(window.innerWidth, window.innerHeight)
+                    : window.innerWidth;
+                const height = isForcedLandscapeRef.current
+                    ? Math.min(window.innerWidth, window.innerHeight)
+                    : window.innerHeight;
+
+                gameCanvasRef.current.width = width;
+                gameCanvasRef.current.height = height;
+                uiCursorCanvasRef.current.width = width;
+                uiCursorCanvasRef.current.height = height;
                 if (cleanBgCanvasRef.current) {
-                    cleanBgCanvasRef.current.width = window.innerWidth;
-                    cleanBgCanvasRef.current.height = window.innerHeight;
+                    cleanBgCanvasRef.current.width = width;
+                    cleanBgCanvasRef.current.height = height;
+                }
+
+                if (playersRef.current.length > 0) {
+                    const mode = selectedModeRef.current;
+                    if (mode === 'single' && playersRef.current[0]) {
+                        playersRef.current[0].updateBounds({ x: 0, y: 0, w: width, h: height });
+                    } else if (mode === 'multi' && playersRef.current.length >= 2) {
+                        const halfW = width / 2;
+                        playersRef.current[0].updateBounds({ x: 0, y: 0, w: halfW, h: height });
+                        playersRef.current[1].updateBounds({ x: halfW, y: 0, w: halfW, h: height });
+                    }
                 }
             }
         };
 
+        resizeCanvasRef.current = resizeCanvas;
         window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
         resizeCanvas();
 
         const videoElement = videoRef.current;
@@ -273,8 +308,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             if (isPlayingRef.current && currentPlayers.length > 0) {
                 if (activeMode === 'multi') {
                     ctx.save();
-                    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-                    ctx.shadowColor = "white";
+                    ctx.strokeStyle = "rgba(242, 243, 244, 0.4)";
+                    ctx.shadowColor = "#f2f3f4";
                     ctx.shadowBlur = 10;
                     ctx.lineWidth = 4;
                     ctx.beginPath();
@@ -369,6 +404,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
         return () => {
             window.removeEventListener('resize', resizeCanvas);
+            window.removeEventListener('orientationchange', resizeCanvas);
+            resizeCanvasRef.current = null;
             if (cameraInstanceRef.current) {
                 cameraInstanceRef.current.stop();
             }
@@ -378,8 +415,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     return (
         <>
             <video ref={videoRef} autoPlay playsInline className="hidden" />
-            <canvas ref={gameCanvasRef} id="game-canvas" className="block w-screen h-screen object-cover" />
-            <canvas ref={uiCursorCanvasRef} id="ui-cursor-canvas" className="absolute inset-0 z-[70] pointer-events-none" />
+            <canvas ref={gameCanvasRef} id="game-canvas" className="block w-full h-full object-cover" />
+            <canvas ref={uiCursorCanvasRef} id="ui-cursor-canvas" className="absolute inset-0 z-[70] pointer-events-none w-full h-full" />
         </>
     );
 };

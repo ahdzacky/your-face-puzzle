@@ -6,6 +6,14 @@ import { WinScreen } from './components/WinScreen';
 import { CameraController } from './core/cameraManager';
 import { Player } from './core/Player';
 import { CameraDevice, CameraPermissionState, GameMode, Language, WinnerInfo } from './types/game';
+import {
+    isMobileDevice,
+    isAppFullscreen,
+    requestAppFullscreen,
+    exitAppFullscreen,
+    lockOrientationLandscape,
+    unlockOrientation
+} from './utils/screenUtils';
 
 const CAMERA_STORAGE_KEY = 'preferred_camera_device_id';
 
@@ -27,7 +35,36 @@ export const App: React.FC = () => {
         }
     });
 
+    const [windowDimensions, setWindowDimensions] = useState({
+        width: typeof window !== 'undefined' ? window.innerWidth : 1280,
+        height: typeof window !== 'undefined' ? window.innerHeight : 720
+    });
+    const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
     const cameraTriggerRef = useRef<((deviceId?: string) => Promise<void>) | null>(null);
+
+    // Track window dimensions and fullscreen status
+    useEffect(() => {
+        const handleWindowResize = () => {
+            setWindowDimensions({
+                width: window.innerWidth,
+                height: window.innerHeight
+            });
+            setIsFullscreen(isAppFullscreen());
+        };
+
+        window.addEventListener('resize', handleWindowResize);
+        window.addEventListener('orientationchange', handleWindowResize);
+        document.addEventListener('fullscreenchange', handleWindowResize);
+        document.addEventListener('webkitfullscreenchange', handleWindowResize);
+
+        return () => {
+            window.removeEventListener('resize', handleWindowResize);
+            window.removeEventListener('orientationchange', handleWindowResize);
+            document.removeEventListener('fullscreenchange', handleWindowResize);
+            document.removeEventListener('webkitfullscreenchange', handleWindowResize);
+        };
+    }, []);
 
     // Initial check for available video input devices and camera permission
     useEffect(() => {
@@ -122,17 +159,37 @@ export const App: React.FC = () => {
         setSelectedMode(mode);
     }, []);
 
-    const handleStartGame = useCallback(() => {
+    const handleStartGame = useCallback(async () => {
         if (isCameraOn && selectedMode) {
             setWinner(null);
             setIsPlaying(true);
+
+            // Auto enter fullscreen & lock orientation on mobile
+            await requestAppFullscreen();
+            await lockOrientationLandscape();
+            setIsFullscreen(isAppFullscreen());
         }
     }, [isCameraOn, selectedMode]);
 
-    const handleReturnToMainMenu = useCallback(() => {
+    const handleReturnToMainMenu = useCallback(async () => {
         setIsPlaying(false);
         setWinner(null);
         setSelectedMode(null);
+
+        unlockOrientation();
+        await exitAppFullscreen();
+        setIsFullscreen(false);
+    }, []);
+
+    const handleToggleFullscreen = useCallback(async () => {
+        if (isAppFullscreen()) {
+            await exitAppFullscreen();
+            setIsFullscreen(false);
+        } else {
+            await requestAppFullscreen();
+            await lockOrientationLandscape();
+            setIsFullscreen(true);
+        }
     }, []);
 
     const handleWin = useCallback((winnerInfo: WinnerInfo) => {
@@ -168,14 +225,33 @@ export const App: React.FC = () => {
         }
     }, [players, selectedMode]);
 
+    // Check if the game is active (playing or win screen) and needs forced landscape
+    const isMobile = isMobileDevice();
+    const isPortrait = windowDimensions.height > windowDimensions.width;
+    const isGameActive = isPlaying || winner !== null;
+    const isForcedLandscape = isMobile && isGameActive && isPortrait;
+
     return (
-        <div className="relative w-screen h-screen overflow-hidden bg-[#070913] font-sora text-white">
+        <div
+            className="relative w-screen h-screen overflow-hidden bg-[#020304] font-zalando font-tech text-white"
+            style={isForcedLandscape ? {
+                position: 'fixed',
+                width: `${windowDimensions.height}px`,
+                height: `${windowDimensions.width}px`,
+                top: 0,
+                left: 0,
+                transformOrigin: '0 0',
+                transform: `rotate(90deg) translateY(-${windowDimensions.width}px)`,
+                overflow: 'hidden'
+            } : undefined}
+        >
             {/* Background Camera & Canvas Layer */}
             <GameCanvas
                 language={language}
                 isPlaying={isPlaying}
                 selectedMode={selectedMode}
                 isWinOpen={winner !== null}
+                isForcedLandscape={isForcedLandscape}
                 selectedDeviceId={selectedDeviceId}
                 onCameraActive={handleCameraActive}
                 onCameraInactive={handleCameraInactive}
@@ -213,6 +289,8 @@ export const App: React.FC = () => {
                     onShuffleP2={handleShuffleP2}
                     onRecalibrateP2={handleRecalibrateP2}
                     onExitGame={handleReturnToMainMenu}
+                    onToggleFullscreen={handleToggleFullscreen}
+                    isFullscreen={isFullscreen}
                 />
             )}
 

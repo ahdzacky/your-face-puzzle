@@ -109,7 +109,7 @@ export const translations: Record<Language, TranslationSchema> = {
         singlePlayerTitle: 'SINGLE PLAYER',
         singlePlayerDesc: 'Main sendiri! Selesaikan puzzle wajahmu secepat mungkin.',
         multiplayerTitle: 'MULTIPLAYER',
-        multiplayerDesc: 'Berdua lebih seru! Siapa yang tercepat menyelesaikan, dia yang menang.',
+        multiplayerDesc: 'Berdua lebih seru! Siapa paling cepat, dia yang menang.',
         rulesTitle: 'ATURAN:',
         rule1: 'Gunakan tanganmu untuk screenshot wajahmu. Lalu susun puzzle dengan menjentikkan jari!',
         rule2: 'Tangan juga bisa untuk klik tombol. Jentikkan jari (pinch) atau tahan tangan di atas tombol!',

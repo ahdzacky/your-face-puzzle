@@ -49,7 +49,7 @@ export function createHandUiController() {
             radius: 10,
             maxRadius: 70,
             alpha: 1.0,
-            color: color || '#00f0ff'
+            color: color || '#23ffff'
         });
     }
 
@@ -61,7 +61,7 @@ export function createHandUiController() {
         const now = Date.now();
 
         mappedHands.forEach((hand, idx) => {
-            const handColor = idx === 0 ? COLOR_P1 : (idx === 1 ? COLOR_P2 : '#00f0ff');
+            const handColor = idx === 0 ? COLOR_P1 : (idx === 1 ? COLOR_P2 : '#23ffff');
 
             // If in menu/win overlay, draw glowing skeleton on top cursor canvas
             if (isMenuOrWinOpen) {
@@ -114,7 +114,7 @@ export function createHandUiController() {
 
                 // Lightning line connecting thumb and index (in menu)
                 if (isMenuOrWinOpen) {
-                    uiCursorCtx.strokeStyle = isPinching ? "#FFFFFF" : handColor;
+                    uiCursorCtx.strokeStyle = isPinching ? "#f2f3f4" : handColor;
                     uiCursorCtx.shadowColor = handColor;
                     uiCursorCtx.shadowBlur = isPinching ? 25 : 12;
                     uiCursorCtx.lineWidth = isPinching ? 5 : 2.5;
@@ -129,7 +129,7 @@ export function createHandUiController() {
                 const baseRadius = clickable ? 14 : 9;
                 const radius = baseRadius + pulse;
 
-                uiCursorCtx.fillStyle = isPinching ? "#FFFFFF" : handColor;
+                uiCursorCtx.fillStyle = isPinching ? "#f2f3f4" : handColor;
                 uiCursorCtx.shadowColor = handColor;
                 uiCursorCtx.shadowBlur = isPinching ? 25 : 15;
                 uiCursorCtx.beginPath();
@@ -138,7 +138,7 @@ export function createHandUiController() {
 
                 // Target ring when hovering clickable
                 if (clickable) {
-                    uiCursorCtx.strokeStyle = isPinching ? "#FFFFFF" : handColor;
+                    uiCursorCtx.strokeStyle = isPinching ? "#f2f3f4" : handColor;
                     uiCursorCtx.lineWidth = isPinching ? 3 : 2;
                     uiCursorCtx.beginPath();
                     uiCursorCtx.arc(cursor.x, cursor.y, radius + 8, 0, Math.PI * 2);
@@ -146,8 +146,8 @@ export function createHandUiController() {
 
                     // Dwell Progress Arc
                     if (dwellProgress > 0 && dwellProgress < 1) {
-                        uiCursorCtx.strokeStyle = "#FFFFFF";
-                        uiCursorCtx.shadowColor = "#FFFFFF";
+                        uiCursorCtx.strokeStyle = "#f2f3f4";
+                        uiCursorCtx.shadowColor = "#f2f3f4";
                         uiCursorCtx.shadowBlur = 10;
                         uiCursorCtx.lineWidth = 4;
                         uiCursorCtx.beginPath();

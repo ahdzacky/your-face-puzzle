@@ -47,29 +47,47 @@ export class Player {
         }
     }
 
+    updateBounds(bounds: Box): void {
+        this.bounds = bounds;
+    }
+
     handleCalibration(handsData: Landmarks[]): void {
         const ctx = this.ctx;
         const lang = this.gameContext.getLanguage ? this.gameContext.getLanguage() : 'en';
         const t = translations[lang] || translations.en;
 
+        const h = this.bounds.h;
+        const isCompact = h < 550;
+        const msgX = this.bounds.x + this.bounds.w / 2;
+
+        const titleFontSize = isCompact ? Math.max(16, Math.floor(h * 0.07)) : 42;
+        const titleY = isCompact ? Math.max(26, Math.floor(h * 0.08)) : 70;
+
+        const sub1FontSize = isCompact ? Math.max(12, Math.floor(h * 0.045)) : 26;
+        const sub1Y = isCompact ? titleY + Math.max(18, Math.floor(h * 0.065)) : 115;
+
+        const sub2FontSize = isCompact ? Math.max(12, Math.floor(h * 0.045)) : 26;
+        const sub2Y = isCompact ? sub1Y + Math.max(16, Math.floor(h * 0.06)) : 155;
+
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 18;
-        ctx.font = "900 42px 'Sora', sans-serif";
+        ctx.font = `900 ${titleFontSize}px 'Zalando Sans Variable', 'Zalando Sans', sans-serif`;
         ctx.textAlign = "center";
-        const msgX = this.bounds.x + this.bounds.w / 2;
-        ctx.fillText(t.playerRaiseHands(this.id), msgX, 70);
+        ctx.fillText(t.playerRaiseHands(this.id), msgX, titleY);
 
-        ctx.font = "bold 26px 'Sora', sans-serif";
-        ctx.fillStyle = "#FFFFFF";
+        ctx.font = `bold ${sub1FontSize}px 'Zalando Sans Variable', 'Zalando Sans', sans-serif`;
+        ctx.fillStyle = "#f2f3f4";
         ctx.shadowColor = "#000000";
         ctx.shadowBlur = 12;
-        ctx.fillText(t.spreadFingers, msgX, 115);
+        ctx.fillText(t.spreadFingers, msgX, sub1Y);
+
+        ctx.font = `bold ${sub2FontSize}px 'Zalando Sans Variable', 'Zalando Sans', sans-serif`;
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 15;
-        ctx.fillText(t.pinchToCapture, msgX, 155);
+        ctx.fillText(t.pinchToCapture, msgX, sub2Y);
         ctx.restore();
 
         if (handsData.length >= 2) {
@@ -94,8 +112,8 @@ export class Player {
                 this.box = { x: left, y: top, w, h };
 
                 ctx.save();
-                ctx.strokeStyle = "white";
-                ctx.shadowColor = "white";
+                ctx.strokeStyle = "#f2f3f4";
+                ctx.shadowColor = "#f2f3f4";
                 ctx.shadowBlur = 15;
                 ctx.lineWidth = 4;
                 ctx.strokeRect(this.box.x, this.box.y, this.box.w, this.box.h);
@@ -106,8 +124,8 @@ export class Player {
 
                 if (pinchLeft) {
                     ctx.save();
-                    ctx.strokeStyle = "white";
-                    ctx.shadowColor = "white";
+                    ctx.strokeStyle = "#f2f3f4";
+                    ctx.shadowColor = "#f2f3f4";
                     ctx.shadowBlur = 20;
                     ctx.lineWidth = 6;
                     ctx.beginPath();
@@ -119,8 +137,8 @@ export class Player {
 
                 if (pinchRight) {
                     ctx.save();
-                    ctx.strokeStyle = "white";
-                    ctx.shadowColor = "white";
+                    ctx.strokeStyle = "#f2f3f4";
+                    ctx.shadowColor = "#f2f3f4";
                     ctx.shadowBlur = 20;
                     ctx.lineWidth = 6;
                     ctx.beginPath();
@@ -230,7 +248,7 @@ export class Player {
         const ctx = this.ctx;
         this.pieces.forEach((p) => {
             ctx.drawImage(p.image, p.drawX, p.drawY);
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.strokeStyle = "rgba(242, 243, 244, 0.2)";
             ctx.lineWidth = 1;
             ctx.strokeRect(p.drawX, p.drawY, p.image.width, p.image.height);
         });
@@ -239,13 +257,18 @@ export class Player {
             const lang = this.gameContext.getLanguage ? this.gameContext.getLanguage() : 'en';
             const t = translations[lang] || translations.en;
 
+            const h = this.bounds.h;
+            const isCompact = h < 550;
+            const fontSize = isCompact ? Math.max(18, Math.floor(h * 0.08)) : 42;
+            const fontY = isCompact ? Math.max(30, Math.floor(h * 0.1)) : 75;
+
             ctx.save();
             ctx.fillStyle = this.color;
             ctx.shadowColor = this.color;
             ctx.shadowBlur = 20;
-            ctx.font = "900 42px 'Sora', sans-serif";
+            ctx.font = `900 ${fontSize}px 'Zalando Sans Variable', 'Zalando Sans', sans-serif`;
             ctx.textAlign = "center";
-            ctx.fillText(t.waitingOpponent, this.bounds.x + this.bounds.w / 2, 75);
+            ctx.fillText(t.waitingOpponent, this.bounds.x + this.bounds.w / 2, fontY);
             ctx.restore();
         }
     }
@@ -254,7 +277,7 @@ export class Player {
         const ctx = this.ctx;
         // Grid Background
         ctx.save();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.strokeStyle = "rgba(242, 243, 244, 0.2)";
         ctx.lineWidth = 1;
         this.slots.forEach(slot => ctx.strokeRect(slot.x, slot.y, slot.w, slot.h));
         ctx.restore();
@@ -283,8 +306,8 @@ export class Player {
             const pulse = pinching ? Math.abs(Math.sin(Date.now() / 120)) * 6 : 0;
             const radius = pinching ? 12 + pulse : 8;
 
-            ctx.fillStyle = pinching ? this.color : "rgba(255, 255, 255, 0.8)";
-            ctx.shadowColor = pinching ? this.color : "white";
+            ctx.fillStyle = pinching ? this.color : "rgba(242, 243, 244, 0.8)";
+            ctx.shadowColor = pinching ? this.color : "#f2f3f4";
             ctx.shadowBlur = pinching ? 20 + pulse * 2 : 10;
 
             if (pinching) {
@@ -416,13 +439,18 @@ export class Player {
         const lang = this.gameContext.getLanguage ? this.gameContext.getLanguage() : 'en';
         const t = translations[lang] || translations.en;
 
+        const h = this.bounds.h;
+        const isCompact = h < 550;
+        const timerFontSize = isCompact ? Math.max(20, Math.floor(h * 0.09)) : 52;
+        const timerY = isCompact ? Math.max(32, Math.floor(h * 0.1)) : 75;
+
         ctx.save();
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 20;
-        ctx.font = "900 52px 'Sora', sans-serif";
+        ctx.font = `900 ${timerFontSize}px 'Zalando Sans Variable', 'Zalando Sans', sans-serif`;
         ctx.textAlign = "center";
-        ctx.fillText(`${t.timeLabel}: ${this.formatTime(this.elapsedTime)}`, this.bounds.x + this.bounds.w / 2, 75);
+        ctx.fillText(`${t.timeLabel}: ${this.formatTime(this.elapsedTime)}`, this.bounds.x + this.bounds.w / 2, timerY);
         ctx.restore();
     }
 
