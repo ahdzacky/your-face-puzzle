@@ -44,12 +44,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-[#020304]/50 backdrop-blur-md transition-opacity duration-500 flex flex-col p-4 sm:p-6 md:p-8"
         >
             {/* Top Bar with Language Selector */}
-            <div className="w-full max-w-5xl mx-auto flex justify-end items-center pt-1 pb-2">
+            <header className="w-full max-w-5xl mx-auto flex justify-end items-center pt-1 pb-2">
                 <LanguageSelector language={language} onLanguageChange={onLanguageChange} />
-            </div>
+            </header>
 
             {/* Inner Content Center Container */}
-            <div className="w-full max-w-5xl m-auto flex flex-col items-center py-2 sm:py-4">
+            <main className="w-full max-w-5xl m-auto flex flex-col items-center py-2 sm:py-4">
                 {/* Title Section */}
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 md:mb-8 tracking-widest uppercase text-center flex flex-wrap justify-center items-center gap-x-3 sm:gap-x-4 gap-y-1">
                     <span className="title-outline-cyan px-2 py-1">{t.titleFace}</span>
@@ -177,7 +177,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                         </span>
                     </button>
                 </div>
-            </div>
+            </main>
 
             {/* Footer */}
             <Footer language={language} />

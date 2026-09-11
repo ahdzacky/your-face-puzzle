@@ -1,14 +1,76 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Face Puzzle</title>
+    <title>Your Face Puzzle - Touchless Hand Tracking Face Sliding Game</title>
     <meta name="description"
-        content="Face puzzle game with hand tracking. Capture your face, solve the puzzle using pinch gestures. Supports single player and local multiplayer.">
-    <!-- Favicon -->
+        content="Play Your Face Puzzle, a touchless webcam puzzle game powered by real-time hand tracking and pinch gestures. Capture your face and solve sliding puzzles in single-player or local multiplayer.">
+    <meta name="keywords"
+        content="face puzzle, hand tracking game, mediapipe hands, webcam game, touchless browser game, sliding puzzle, camera game, interactive puzzle, web game, gesture control">
+    <meta name="author" content="Ahmad Miftahul Zaki">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="theme-color" content="#020304">
+    <meta name="color-scheme" content="dark">
+
+    <!-- Canonical & Preconnect -->
+    <link rel="canonical" href="https://puzzle.ahmadzacky.com/">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
+    <!-- Favicon & Icons -->
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/favicon.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://puzzle.ahmadzacky.com/">
+    <meta property="og:site_name" content="Your Face Puzzle">
+    <meta property="og:title" content="Your Face Puzzle - Touchless Hand Tracking Face Sliding Game">
+    <meta property="og:description"
+        content="Play Your Face Puzzle, a touchless webcam puzzle game powered by real-time hand tracking and pinch gestures. Capture your face and solve puzzles solo or with friends.">
+    <meta property="og:image" content="https://puzzle.ahmadzacky.com/puzzle.png">
+    <meta property="og:image:width" content="800">
+    <meta property="og:image:height" content="800">
+    <meta property="og:image:alt" content="Your Face Puzzle Game">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Your Face Puzzle - Touchless Hand Tracking Face Sliding Game">
+    <meta name="twitter:description"
+        content="Play Your Face Puzzle, a touchless webcam puzzle game powered by real-time hand tracking and pinch gestures.">
+    <meta name="twitter:image" content="https://puzzle.ahmadzacky.com/puzzle.png">
+    <meta name="twitter:creator" content="@ahdzacky">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Your Face Puzzle",
+      "alternateName": "Face Puzzle",
+      "url": "https://puzzle.ahmadzacky.com/",
+      "applicationCategory": "GameApplication",
+      "genre": ["Puzzle", "Augmented Reality", "Hand Tracking"],
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires modern browser with webcam access and WebAssembly support",
+      "description": "An interactive web-based sliding face puzzle game powered by real-time computer vision and webcam hand tracking. Players capture their face and solve the puzzle using pinch gestures.",
+      "inLanguage": ["en", "id"],
+      "image": "https://puzzle.ahmadzacky.com/puzzle.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Ahmad Miftahul Zaki",
+        "url": "https://ahmadzacky.com"
+      }
+    }
+    </script>
+
     <!-- MediaPipe Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
@@ -16,6 +78,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body class="font-zalando text-white bg-[#020304]">
+    <noscript>
+        <div style="padding: 2rem; max-width: 640px; margin: 0 auto; text-align: center; font-family: sans-serif; color: #f2f3f4;">
+            <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #23ffff;">Your Face Puzzle</h1>
+            <p style="margin-bottom: 1rem; line-height: 1.6;">
+                An interactive web-based sliding face puzzle game powered by real-time computer vision and webcam hand tracking.
+                Capture your face using hand gestures and solve the puzzle using touchless pinch controls.
+            </p>
+            <p style="color: #f23498; font-weight: bold;">
+                JavaScript is required to run MediaPipe hand tracking and play the game. Please enable JavaScript in your browser to continue.
+            </p>
+        </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 </body>
