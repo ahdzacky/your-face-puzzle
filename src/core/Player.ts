@@ -60,14 +60,14 @@ export class Player {
         const isCompact = h < 550;
         const msgX = this.bounds.x + this.bounds.w / 2;
 
-        const titleFontSize = isCompact ? Math.max(16, Math.floor(h * 0.07)) : 42;
-        const titleY = isCompact ? Math.max(26, Math.floor(h * 0.08)) : 70;
+        const titleFontSize = isCompact ? Math.max(15, Math.floor(h * 0.065)) : 38;
+        const titleY = isCompact ? Math.max(65, Math.floor(h * 0.14)) : 108;
 
-        const sub1FontSize = isCompact ? Math.max(12, Math.floor(h * 0.045)) : 26;
-        const sub1Y = isCompact ? titleY + Math.max(18, Math.floor(h * 0.065)) : 115;
+        const sub1FontSize = isCompact ? Math.max(12, Math.floor(h * 0.04)) : 24;
+        const sub1Y = isCompact ? titleY + Math.max(18, Math.floor(h * 0.055)) : titleY + 38;
 
-        const sub2FontSize = isCompact ? Math.max(12, Math.floor(h * 0.045)) : 26;
-        const sub2Y = isCompact ? sub1Y + Math.max(16, Math.floor(h * 0.06)) : 155;
+        const sub2FontSize = isCompact ? Math.max(12, Math.floor(h * 0.04)) : 24;
+        const sub2Y = isCompact ? sub1Y + Math.max(16, Math.floor(h * 0.05)) : sub1Y + 36;
 
         ctx.save();
         ctx.fillStyle = this.color;
@@ -259,8 +259,8 @@ export class Player {
 
             const h = this.bounds.h;
             const isCompact = h < 550;
-            const fontSize = isCompact ? Math.max(18, Math.floor(h * 0.08)) : 42;
-            const fontY = isCompact ? Math.max(30, Math.floor(h * 0.1)) : 75;
+            const fontSize = isCompact ? Math.max(16, Math.floor(h * 0.07)) : 38;
+            const fontY = isCompact ? Math.max(65, Math.floor(h * 0.14)) : 108;
 
             ctx.save();
             ctx.fillStyle = this.color;
@@ -441,8 +441,8 @@ export class Player {
 
         const h = this.bounds.h;
         const isCompact = h < 550;
-        const timerFontSize = isCompact ? Math.max(20, Math.floor(h * 0.09)) : 52;
-        const timerY = isCompact ? Math.max(32, Math.floor(h * 0.1)) : 75;
+        const timerFontSize = isCompact ? Math.max(16, Math.floor(h * 0.065)) : 34;
+        const timerY = isCompact ? Math.max(34, Math.floor(h * 0.08)) : 48;
 
         ctx.save();
         ctx.fillStyle = this.color;

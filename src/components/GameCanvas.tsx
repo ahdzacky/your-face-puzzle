@@ -4,7 +4,7 @@ import { Player } from '../core/Player';
 import { createHandUiController, drawSkeleton, initMediaPipe } from '../core/handTracking';
 import { CameraController } from '../core/cameraManager';
 import { CameraDevice, GameMode, Landmarks, Language, WinnerInfo } from '../types/game';
-import { MediaPipeResults } from '../types/mediapipe';
+import { Hands, MediaPipeResults } from '../types/mediapipe';
 
 interface GameCanvasProps {
     language: Language;
@@ -42,6 +42,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
     const playersRef = useRef<Player[]>([]);
     const cameraInstanceRef = useRef<CameraController | null>(null);
+    const handsInstanceRef = useRef<Hands | null>(null);
     const handUiControllerRef = useRef(createHandUiController());
 
     // Keep props in refs for use in the MediaPipe callback
@@ -77,6 +78,16 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     useEffect(() => {
         selectedModeRef.current = selectedMode;
     }, [selectedMode]);
+
+    // Dynamic hand detection limit: 2 hands for Main Menu & Single Player, 4 hands for Multiplayer
+    useEffect(() => {
+        const targetMaxHands = isPlaying && selectedMode === 'multi' ? 4 : 2;
+        if (handsInstanceRef.current) {
+            handsInstanceRef.current.setOptions({
+                maxNumHands: targetMaxHands
+            });
+        }
+    }, [isPlaying, selectedMode]);
 
     useEffect(() => {
         isWinOpenRef.current = isWinOpen;
@@ -286,9 +297,15 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             ctx.filter = "none";
             ctx.restore();
 
+            const isMenuOrWinOpen = !isPlayingRef.current || isWinOpenRef.current;
+            const currentPlayers = playersRef.current;
+            const activeMode = selectedModeRef.current;
+            const maxHands = isPlayingRef.current && activeMode === 'multi' ? 4 : 2;
+
             const mappedHands: Landmarks[] = [];
             if (results.multiHandLandmarks) {
-                for (const landmarks of results.multiHandLandmarks) {
+                const limitedLandmarks = results.multiHandLandmarks.slice(0, maxHands);
+                for (const landmarks of limitedLandmarks) {
                     const mapped = landmarks.map(lm => {
                         let x = lm.x * dw + dx;
                         const y = lm.y * dh + dy;
@@ -300,10 +317,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             }
 
             uiCursorCtx.clearRect(0, 0, uiCursorCanvas.width, uiCursorCanvas.height);
-
-            const isMenuOrWinOpen = !isPlayingRef.current || isWinOpenRef.current;
-            const currentPlayers = playersRef.current;
-            const activeMode = selectedModeRef.current;
 
             if (isPlayingRef.current && currentPlayers.length > 0) {
                 if (activeMode === 'multi') {
@@ -323,14 +336,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                 let p2Hands: Landmarks[] = [];
 
                 if (activeMode === 'single') {
-                    p1Hands = mappedHands;
+                    p1Hands = mappedHands.slice(0, 2);
                 } else if (activeMode === 'multi') {
                     mappedHands.forEach(hand => {
                         const avgX = hand.reduce((sum, lm) => sum + lm.x, 0) / hand.length;
                         if (avgX < gameCanvas.width / 2) {
-                            p1Hands.push(hand);
+                            if (p1Hands.length < 2) p1Hands.push(hand);
                         } else {
-                            p2Hands.push(hand);
+                            if (p2Hands.length < 2) p2Hands.push(hand);
                         }
                     });
                 }
@@ -369,16 +382,18 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             }
         };
 
-        const { camera } = initMediaPipe({
+        const { hands, camera } = initMediaPipe({
             videoElement,
             onResultsCallback: onResults,
             onCameraInactive: () => {
                 if (onCameraInactiveRef.current) {
                     onCameraInactiveRef.current();
                 }
-            }
+            },
+            maxNumHands: 2
         });
 
+        handsInstanceRef.current = hands;
         cameraInstanceRef.current = camera;
 
         const startCam = async (deviceId?: string) => {
@@ -408,6 +423,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             resizeCanvasRef.current = null;
             if (cameraInstanceRef.current) {
                 cameraInstanceRef.current.stop();
+            }
+            if (handsInstanceRef.current) {
+                handsInstanceRef.current.close().catch(() => {});
+                handsInstanceRef.current = null;
             }
         };
     }, [onCameraActive, cameraTriggerRef]);

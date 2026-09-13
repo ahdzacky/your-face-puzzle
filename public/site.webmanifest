@@ -3,7 +3,7 @@
   "short_name": "Face Puzzle",
   "description": "Touchless sliding face puzzle game with hand tracking and pinch gestures",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#020304",
   "theme_color": "#020304",
   "icons": [

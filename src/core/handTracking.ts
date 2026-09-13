@@ -193,11 +193,13 @@ export function createHandUiController() {
 export function initMediaPipe({
     videoElement,
     onResultsCallback,
-    onCameraInactive
+    onCameraInactive,
+    maxNumHands = 2
 }: {
     videoElement: HTMLVideoElement;
     onResultsCallback: (results: MediaPipeResults) => void;
     onCameraInactive?: () => void;
+    maxNumHands?: number;
 }): { hands: Hands | null; camera: CameraController | null } {
     if (typeof window === 'undefined' || !window.Hands) {
         console.warn('MediaPipe Hands is not yet loaded on window.');
@@ -209,7 +211,7 @@ export function initMediaPipe({
     });
 
     hands.setOptions({
-        maxNumHands: 4,
+        maxNumHands,
         modelComplexity: 1,
         minDetectionConfidence: 0.7,
         minTrackingConfidence: 0.7

@@ -66,6 +66,28 @@ export const App: React.FC = () => {
         };
     }, []);
 
+    // Auto-enter fullscreen immediately on startup and on first user interaction
+    useEffect(() => {
+        requestAppFullscreen().catch(() => {});
+
+        const handleInitialInteraction = async () => {
+            if (!isAppFullscreen()) {
+                await requestAppFullscreen();
+                setIsFullscreen(isAppFullscreen());
+            }
+        };
+
+        window.addEventListener('click', handleInitialInteraction, { once: true });
+        window.addEventListener('touchstart', handleInitialInteraction, { once: true });
+        window.addEventListener('pointerdown', handleInitialInteraction, { once: true });
+
+        return () => {
+            window.removeEventListener('click', handleInitialInteraction);
+            window.removeEventListener('touchstart', handleInitialInteraction);
+            window.removeEventListener('pointerdown', handleInitialInteraction);
+        };
+    }, []);
+
     // Initial check for available video input devices and camera permission
     useEffect(() => {
         CameraController.getAvailableDevices().then((devs) => {
@@ -171,14 +193,13 @@ export const App: React.FC = () => {
         }
     }, [isCameraOn, selectedMode]);
 
-    const handleReturnToMainMenu = useCallback(async () => {
+    const handleReturnToMainMenu = useCallback(() => {
         setIsPlaying(false);
         setWinner(null);
         setSelectedMode(null);
 
         unlockOrientation();
-        await exitAppFullscreen();
-        setIsFullscreen(false);
+        setIsFullscreen(isAppFullscreen());
     }, []);
 
     const handleToggleFullscreen = useCallback(async () => {
